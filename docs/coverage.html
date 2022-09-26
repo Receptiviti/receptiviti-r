@@ -106,8 +106,8 @@ table.table-condensed {
       </ul>
       <div class="tab-content" data-tabsetid="covr">
         <div class="tab-pane active" title="Files" data-value="Files" id="tab-covr-1">
-          <div id="htmlwidget-804677060c77410369f1" style="width:100%;height:500px;" class="datatables html-widget"></div>
-          <script type="application/json" data-for="htmlwidget-804677060c77410369f1">{"x":{"filter":"none","vertical":false,"fillContainer":false,"data":[["<a href=\"#\">R/receptiviti.R<\/a>","<a href=\"#\">R/receptiviti_status.R<\/a>"],[602,42],[328,27],[285,27],[43,0],["76","14"],["86.89%","100.00%"]],"container":"<table class=\"row-border\">\n  <thead>\n    <tr>\n      <th>File<\/th>\n      <th>Lines<\/th>\n      <th>Relevant<\/th>\n      <th>Covered<\/th>\n      <th>Missed<\/th>\n      <th>Hits / Line<\/th>\n      <th>Coverage<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"dom":"t","paging":false,"columnDefs":[{"targets":6,"createdCell":"function(td, cellData, rowData, row, col) {\n  var percent = cellData.replace(\"%\", \"\");\n  if (percent > 90) {\n    var grad = \"linear-gradient(90deg, #edfde7 \" + cellData + \", white \" + cellData + \")\";\n  } else if (percent > 75) {\n    var grad = \"linear-gradient(90deg, #f9ffe5 \" + cellData + \", white \" + cellData + \")\";\n  } else {\n    var grad = \"linear-gradient(90deg, #fcece9 \" + cellData + \", white \" + cellData + \")\";\n  }\n  $(td).css(\"background\", grad);\n}\n"},{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false},"callback":"function(table) {\ntable.on('click.dt', 'a', function() {\n  files = $('div#files div');\n  files.not('div.hidden').addClass('hidden');\n  id = $(this).text();\n  files.filter('div[id=\\'' + id + '\\']').removeClass('hidden');\n  $('ul.nav a[data-value=Source]').text(id).tab('show');\n});\n}"},"evals":["options.columnDefs.0.createdCell","callback"],"jsHooks":[]}</script>
+          <div id="htmlwidget-cd5fe98a52d15cd3747f" style="width:100%;height:500px;" class="datatables html-widget"></div>
+          <script type="application/json" data-for="htmlwidget-cd5fe98a52d15cd3747f">{"x":{"filter":"none","vertical":false,"fillContainer":false,"data":[["<a href=\"#\">R/receptiviti.R<\/a>","<a href=\"#\">R/receptiviti_status.R<\/a>"],[602,42],[328,27],[285,27],[43,0],["78","14"],["86.89%","100.00%"]],"container":"<table class=\"row-border\">\n  <thead>\n    <tr>\n      <th>File<\/th>\n      <th>Lines<\/th>\n      <th>Relevant<\/th>\n      <th>Covered<\/th>\n      <th>Missed<\/th>\n      <th>Hits / Line<\/th>\n      <th>Coverage<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"dom":"t","paging":false,"columnDefs":[{"targets":6,"createdCell":"function(td, cellData, rowData, row, col) {\n  var percent = cellData.replace(\"%\", \"\");\n  if (percent > 90) {\n    var grad = \"linear-gradient(90deg, #edfde7 \" + cellData + \", white \" + cellData + \")\";\n  } else if (percent > 75) {\n    var grad = \"linear-gradient(90deg, #f9ffe5 \" + cellData + \", white \" + cellData + \")\";\n  } else {\n    var grad = \"linear-gradient(90deg, #fcece9 \" + cellData + \", white \" + cellData + \")\";\n  }\n  $(td).css(\"background\", grad);\n}\n"},{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false},"callback":"function(table) {\ntable.on('click.dt', 'a', function() {\n  files = $('div#files div');\n  files.not('div.hidden').addClass('hidden');\n  id = $(this).text();\n  files.filter('div[id=\\'' + id + '\\']').removeClass('hidden');\n  $('ul.nav a[data-value=Source]').text(id).tab('show');\n});\n}"},"evals":["options.columnDefs.0.createdCell","callback"],"jsHooks":[]}</script>
         </div>
         <div class="tab-pane" title="Source" data-value="Source" id="tab-covr-2">
           <div id="files">
@@ -1287,7 +1287,7 @@ table.table-condensed {
                     <td class="num">168</td>
                     <td class="coverage">!</td>
                     <td class="col-sm-12">
-                      <pre class="language-r">      if (!isFALSE(getOption("receptiviti.cache_prompt")) &amp;&amp;</pre>
+                      <pre class="language-r">      if (interactive() &amp;&amp; !isFALSE(getOption("receptiviti.cache_prompt")) &amp;&amp;</pre>
                     </td>
                   </tr>
                   <tr class="missed">
@@ -2531,14 +2531,14 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">346</td>
-                    <td class="coverage">127<em>x</em></td>
+                    <td class="coverage">119<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      unpack &lt;- function(d) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">347</td>
-                    <td class="coverage">16119<em>x</em></td>
+                    <td class="coverage">16716<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (is.list(d)) as.data.frame(lapply(d, unpack), optional = TRUE) else d</pre>
                     </td>
@@ -2552,63 +2552,63 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">349</td>
-                    <td class="coverage">127<em>x</em></td>
+                    <td class="coverage">119<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      json &lt;- jsonlite::toJSON(body, auto_unbox = TRUE)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">350</td>
-                    <td class="coverage">127<em>x</em></td>
+                    <td class="coverage">119<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      temp_file &lt;- paste0(tempdir(), "/", digest::digest(json, serialize = FALSE), ".json")</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">351</td>
-                    <td class="coverage">118<em>x</em></td>
+                    <td class="coverage">110<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!request_cache) unlink(temp_file)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">352</td>
-                    <td class="coverage">127<em>x</em></td>
+                    <td class="coverage">119<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      res &lt;- NULL</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">353</td>
-                    <td class="coverage">127<em>x</em></td>
+                    <td class="coverage">119<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!file.exists(temp_file)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">354</td>
-                    <td class="coverage">123<em>x</em></td>
+                    <td class="coverage">115<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (make_request) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">355</td>
-                    <td class="coverage">122<em>x</em></td>
+                    <td class="coverage">114<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          handler &lt;- curl::new_handle(</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">356</td>
-                    <td class="coverage">122<em>x</em></td>
+                    <td class="coverage">114<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">            httpauth = 1, userpwd = auth,</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">357</td>
-                    <td class="coverage">122<em>x</em></td>
+                    <td class="coverage">114<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">            copypostfields = jsonlite::toJSON(unname(body), auto_unbox = TRUE)</pre>
                     </td>
@@ -2622,7 +2622,7 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">359</td>
-                    <td class="coverage">122<em>x</em></td>
+                    <td class="coverage">114<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          res &lt;- curl::curl_fetch_disk(endpoint, temp_file, handler)</pre>
                     </td>
@@ -2657,14 +2657,14 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">364</td>
-                    <td class="coverage">126<em>x</em></td>
+                    <td class="coverage">118<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      result &lt;- if (file.exists(temp_file)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">365</td>
-                    <td class="coverage">126<em>x</em></td>
+                    <td class="coverage">118<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        jsonlite::read_json(temp_file, simplifyVector = TRUE)</pre>
                     </td>
@@ -2692,21 +2692,21 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">369</td>
-                    <td class="coverage">126<em>x</em></td>
+                    <td class="coverage">118<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!is.null(result$results)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">370</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        result &lt;- result$results</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">371</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if ("error" %in% names(result)) {</pre>
                     </td>
@@ -2790,28 +2790,28 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">383</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        result &lt;- unpack(result[!names(result) %in% c("response_id", "language", "version", "error")])</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">384</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (!is.null(result) &amp;&amp; nrow(result)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">385</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          colnames(result)[1] &lt;- "text_hash"</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">386</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          cbind(id = ids, bin = bin, result)</pre>
                     </td>
@@ -2839,35 +2839,35 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">390</td>
-                    <td class="coverage">45<em>x</em></td>
+                    <td class="coverage">34<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (!is.null(result$code) &amp;&amp; result$code == 1420 &amp;&amp; attempt &gt; 0) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">391</td>
-                    <td class="coverage">44<em>x</em></td>
+                    <td class="coverage">33<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          unlink(temp_file)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">392</td>
-                    <td class="coverage">44<em>x</em></td>
+                    <td class="coverage">33<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          wait_time &lt;- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">393</td>
-                    <td class="coverage">44<em>x</em></td>
+                    <td class="coverage">33<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">394</td>
-                    <td class="coverage">44<em>x</em></td>
+                    <td class="coverage">33<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          request(body, bin, ids, attempt - 1)</pre>
                     </td>
@@ -2951,21 +2951,21 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">406</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      opts &lt;- getOption("stringsAsFactors")</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">407</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      options("stringsAsFactors" = FALSE)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">408</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      on.exit(options("stringsAsFactors" = opts))</pre>
                     </td>
@@ -2979,21 +2979,21 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">410</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      text &lt;- bundle$text</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">411</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      bin &lt;- NULL</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">412</td>
-                    <td class="coverage">103<em>x</em></td>
+                    <td class="coverage">106<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (text_as_paths) {</pre>
                     </td>
@@ -3049,35 +3049,35 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">420</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      bundle$hashes &lt;- vapply(text, digest::digest, "", serialize = FALSE)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">421</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      initial &lt;- paste0("h", substr(bundle$hashes, 1, 1))</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">422</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      set &lt;- !is.na(text) &amp; text != "" &amp; text != "logical(0)" &amp; !duplicated(bundle$hashes)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">423</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      res_cached &lt;- res_fresh &lt;- NULL</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">424</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (check_cache &amp;&amp; dir.exists(paste0(temp, "bin=h"))) {</pre>
                     </td>
@@ -3210,42 +3210,42 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">443</td>
-                    <td class="coverage">102<em>x</em></td>
+                    <td class="coverage">105<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (any(set)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">444</td>
-                    <td class="coverage">83<em>x</em></td>
+                    <td class="coverage">86<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        set &lt;- which(set)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">445</td>
-                    <td class="coverage">83<em>x</em></td>
+                    <td class="coverage">86<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        res_fresh &lt;- request(lapply(</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">446</td>
-                    <td class="coverage">83<em>x</em></td>
+                    <td class="coverage">86<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          set, function(i) list(content = text[[i]], request_id = bundle[i, "hashes"])</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">447</td>
-                    <td class="coverage">83<em>x</em></td>
+                    <td class="coverage">86<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        ), initial[set], bundle[set, "id"])</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">448</td>
-                    <td class="coverage">81<em>x</em></td>
+                    <td class="coverage">84<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (check_cache &amp;&amp; !is.null(res_cached) &amp;&amp; !all(colnames(res_cached) %in% colnames(res_fresh))) {</pre>
                     </td>
@@ -3315,21 +3315,21 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">458</td>
-                    <td class="coverage">100<em>x</em></td>
+                    <td class="coverage">103<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      res &lt;- rbind(res_cached, res_fresh)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">459</td>
-                    <td class="coverage">100<em>x</em></td>
+                    <td class="coverage">103<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      missing_ids &lt;- !bundle$id %in% res$id</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">460</td>
-                    <td class="coverage">100<em>x</em></td>
+                    <td class="coverage">103<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (any(missing_ids)) {</pre>
                     </td>
@@ -3378,14 +3378,14 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">467</td>
-                    <td class="coverage">100<em>x</em></td>
+                    <td class="coverage">103<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      prog()</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">468</td>
-                    <td class="coverage">100<em>x</em></td>
+                    <td class="coverage">103<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      res</pre>
                     </td>
