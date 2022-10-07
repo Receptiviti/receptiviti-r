@@ -6,16 +6,8 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 notes
-
-- Note: New submission; spellings and URLs are correct
+0 errors | 0 warnings | 0 notes
 
 ## Reverse dependencies
 
 None
-
-## Resubmission
-
-- single quotes added around API name in title
-- default cache location is now only established on user confirmation
-- multiple cores are only used if a valid API key is present
