@@ -261,7 +261,7 @@ test_that("reading from files works", {
   expect_equal(receptiviti(file_csv, text_column = "text", cache = temp_cache)[, -1], initial)
 
   alt_id <- receptiviti(file_csv, text_column = "text", id_column = "id", cache = temp_cache)
-  expect_identical(alt_id, receptiviti(csv_data, text_column = "text", id_column = "id", cache = temp_cache))
+  expect_identical(alt_id, receptiviti(csv_data, text_column = "text", id = "id", cache = temp_cache))
   expect_identical(alt_id, receptiviti(csv_data$text, id = csv_data$id, cache = temp_cache))
 })
 
