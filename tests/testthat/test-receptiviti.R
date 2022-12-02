@@ -10,7 +10,7 @@ on.exit(Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret))
 test_that("invalid inputs are caught", {
   expect_error(receptiviti(), "enter text as the first argument", fixed = TRUE)
   expect_error(receptiviti("", key = ""), "specify your key", fixed = TRUE)
-  expect_error(receptiviti("", key = 123), "401 (1411): Unrecognized API key pair.", fixed = TRUE)
+  expect_error(receptiviti("", key = 123), "401 (1411): ", fixed = TRUE)
   expect_error(receptiviti("", secret = ""), "specify your secret", fixed = TRUE)
   expect_error(receptiviti(matrix(0, 2, 2)), "text has dimensions, but no text_column column", fixed = TRUE)
   expect_error(receptiviti("", id = 1:2), "id is not the same length as text", fixed = TRUE)

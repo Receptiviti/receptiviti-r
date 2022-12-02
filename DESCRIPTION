@@ -18,7 +18,7 @@ Suggests:
     rmarkdown,
     future
 Config/testthat/edition: 3
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.2
 Roxygen: list(old_usage = TRUE)
 URL: https://receptiviti.github.io/receptiviti-r/, https://github.com/Receptiviti/receptiviti-r
 BugReports: https://github.com/Receptiviti/receptiviti-r/issues
