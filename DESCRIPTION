@@ -1,8 +1,7 @@
 Package: receptiviti
 Type: Package
 Title: Text Analysis Through the 'Receptiviti' API
-Version: 0.1.3
-Date: 2022-09-08
+Version: 0.1.4
 Authors@R: c(
     person("Receptiviti Inc.", role = c("fnd", "cph")),
     person("Kent", "English", role = "cre", email = "kenglish@receptiviti.com"),
@@ -18,7 +17,7 @@ Suggests:
     rmarkdown,
     future
 Config/testthat/edition: 3
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Roxygen: list(old_usage = TRUE)
 URL: https://receptiviti.github.io/receptiviti-r/, https://github.com/Receptiviti/receptiviti-r
 BugReports: https://github.com/Receptiviti/receptiviti-r/issues
