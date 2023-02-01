@@ -1,3 +1,11 @@
+# receptiviti 0.1.4
+
+### Improvements
+* Makes the request cache sensitive to URL and credentials, to make it easier to make different requests with the same text.
+
+### Bug Fixes
+* Avoids an unhandled body-size-related issue with libcurl.
+
 # receptiviti 0.1.3
 
 ### Improvements

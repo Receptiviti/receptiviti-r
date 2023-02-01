@@ -43,7 +43,7 @@ test_that("default cache works", {
 test_that("invalid texts are caught", {
   expect_error(
     receptiviti(paste(rep(" ", 1e7), collapse = "")),
-    "one of your texts is over the individual size limit (10 MB)",
+    "one of your texts is over the individual size limit",
     fixed = TRUE
   )
   expect_error(receptiviti(NA), "no valid texts to process", fixed = TRUE)
@@ -266,6 +266,7 @@ test_that("reading from files works", {
 })
 
 test_that("spliting oversized bundles works", {
+  unlink(list.files(temp_source, "txt", full.names = TRUE), TRUE)
   texts <- vapply(seq_len(50), function(d) {
     paste0(sample(words, 6e4, TRUE), collapse = " ")
   }, "")
@@ -273,7 +274,14 @@ test_that("spliting oversized bundles works", {
     writeLines(texts[i], files_txt[i])
   }
   expect_true(sum(file.size(files_txt)) > 1e7)
-  expect_error(receptiviti(temp_source, cache = FALSE), NA)
+  expect_identical(
+    receptiviti(temp_source, cache = FALSE)$text_hash,
+    unname(vapply(
+      list.files(temp_source, "txt", full.names = TRUE),
+      function(f) unname(digest::digest(texts[files_txt == f], serialize = FALSE)),
+      ""
+    ))
+  )
 })
 
 test_that("rate limit is handled", {

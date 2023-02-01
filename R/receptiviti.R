@@ -22,6 +22,8 @@
 #' If this is not specified, and 1 framework is selected, or \code{as_list} is \code{TRUE}, will default to remove prefixes.
 #' @param as_list Logical; if \code{TRUE}, returns a list with frameworks in separate entries.
 #' @param bundle_size Number of texts to include in each request; between 1 and 1,000.
+#' @param bundle_byte_limit Memory limit (in bytes) of each bundle, under \code{1e7} (10 MB, which is the API's limit).
+#' May need to be lower than the API's limit, depending on the system's requesting library.
 #' @param collapse_lines Logical; if \code{TRUE}, and \code{text} contains paths to files, each file is treated as a single text.
 #' @param retry_limit Maximum number of times each request can be retried after hitting a rate limit.
 #' @param overwrite Logical; if \code{TRUE}, will overwrite an existing \code{output} file.
@@ -31,12 +33,12 @@
 #' texts it has no other source for.
 #' @param text_as_paths Logical; if \code{TRUE}, ensures \code{text} is treated as a vector of file paths. Otherwise, this will be
 #' determined if there are no \code{NA}s in \code{text} and every entry is under 500 characters long.
-#' @param cache Path to a directory in which to save unique results for reuse; defaults to \code{Sys.getenv("RECEPTIVITI_CACHE")}.
-#' See the Cache section for details.
+#' @param cache Path to a directory in which to save unique results for reuse; defaults to
+#' \code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}. See the Cache section for details.
 #' @param cache_overwrite Logical; if \code{TRUE}, will write results to the cache without reading from it. This could be used
 #' if you want fresh results to be cached without clearing the cache.
 #' @param cache_format Format of the cache database; see \code{\link[arrow]{FileFormat}}.
-#' Defaults to \code{Sys.getenv("RECEPTIVITI_CACHE_FORMAT")}.
+#' Defaults to \code{Sys.getenv(}\code{"RECEPTIVITI_CACHE_FORMAT")}.
 #' @param clear_cache Logical; if \code{TRUE}, will clear any existing files in the cache. Use \code{cache_overwrite} if
 #' you want fresh results without clearing or disabling the cache. Use \code{cache = FALSE} to disable the cache.
 #' @param request_cache Logical; if \code{FALSE}, will always make a fresh request, rather than using the response
@@ -63,7 +65,7 @@
 #'
 #' @section Cache:
 #' By default, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
-#' cache location (\code{Sys.getenv("RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
+#' cache location (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
 #' This ensures that the exact same texts are not re-sent to the API.
 #' This does, however, add some processing time and disc space usage.
 #'
@@ -149,11 +151,12 @@
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
                         frameworks = getOption("receptiviti_frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
-                        bundle_size = 1000, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE, clear_scratch_cache = TRUE,
-                        request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE, verbose = FALSE,
-                        overwrite = FALSE, compress = FALSE, make_request = TRUE, text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"),
-                        cache_overwrite = FALSE, cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
-                        key = Sys.getenv("RECEPTIVITI_KEY"), secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL")) {
+                        bundle_size = 1000, bundle_byte_limit = 81e5, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
+                        clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
+                        verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE, text_as_paths = FALSE,
+                        cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
+                        cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"), key = Sys.getenv("RECEPTIVITI_KEY"),
+                        secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL")) {
   # check input
   final_res <- text_hash <- bin <- NULL
   if (!is.null(output)) {
@@ -282,15 +285,20 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     size_fun <- if (text_as_paths) function(b) sum(file.size(b$text)) else object.size
     for (i in seq_along(bundles)) {
       size <- size_fun(bundles[[i]])
-      if (size > 1e7) {
+      if (size > bundle_byte_limit) {
         sizes <- vapply(seq_len(nrow(bundles[[i]])), function(r) as.numeric(size_fun(bundles[[i]][r, ])), 0)
-        if (any(sizes > 1e7)) stop("one of your texts is over the individual size limit (10 MB)", call. = FALSE)
+        if (any(sizes > bundle_byte_limit)) {
+          stop(
+            "one of your texts is over the individual size limit (", bundle_byte_limit / 1e6, " MB)",
+            call. = FALSE
+          )
+        }
         bins <- rep(1, length(sizes))
         bin_size <- 0
         bi <- 1
         for (ti in seq_along(bins)) {
           bin_size <- bin_size + sizes[ti]
-          if (bin_size > 1e7) {
+          if (bin_size > bundle_byte_limit) {
             bin_size <- sizes[ti]
             bi <- bi + 1
           }
@@ -347,16 +355,13 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       unpack <- function(d) {
         if (is.list(d)) as.data.frame(lapply(d, unpack), optional = TRUE) else d
       }
-      json <- jsonlite::toJSON(body, auto_unbox = TRUE)
-      temp_file <- paste0(tempdir(), "/", digest::digest(json, serialize = FALSE), ".json")
+      json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
+      temp_file <- paste0(tempdir(), "/", digest::digest(paste0(endpoint, auth, json), serialize = FALSE), ".json")
       if (!request_cache) unlink(temp_file)
       res <- NULL
       if (!file.exists(temp_file)) {
         if (make_request) {
-          handler <- curl::new_handle(
-            httpauth = 1, userpwd = auth,
-            copypostfields = jsonlite::toJSON(unname(body), auto_unbox = TRUE)
-          )
+          handler <- curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json)
           res <- curl::curl_fetch_disk(endpoint, temp_file, handler)
         } else {
           stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)

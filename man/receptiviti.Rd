@@ -9,12 +9,12 @@ receptiviti(text, output = NULL, id = NULL, text_column = NULL,
   id_column = NULL, file_type = "txt", return_text = FALSE,
   frameworks = getOption("receptiviti_frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
-  collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
-  clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores()
-  - 1, use_future = FALSE, in_memory = TRUE, verbose = FALSE,
-  overwrite = FALSE, compress = FALSE, make_request = TRUE,
-  text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"),
-  cache_overwrite = FALSE,
+  bundle_byte_limit = 8100000, collapse_lines = FALSE, retry_limit = 10,
+  clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
+  cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
+  verbose = FALSE, overwrite = FALSE, compress = FALSE,
+  make_request = TRUE, text_as_paths = FALSE,
+  cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
   cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
   key = Sys.getenv("RECEPTIVITI_KEY"),
   secret = Sys.getenv("RECEPTIVITI_SECRET"),
@@ -52,6 +52,9 @@ If this is not specified, and 1 framework is selected, or \code{as_list} is \cod
 
 \item{bundle_size}{Number of texts to include in each request; between 1 and 1,000.}
 
+\item{bundle_byte_limit}{Memory limit (in bytes) of each bundle, under \code{1e7} (10 MB, which is the API's limit).
+May need to be lower than the API's limit, depending on the system's requesting library.}
+
 \item{collapse_lines}{Logical; if \code{TRUE}, and \code{text} contains paths to files, each file is treated as a single text.}
 
 \item{retry_limit}{Maximum number of times each request can be retried after hitting a rate limit.}
@@ -86,14 +89,14 @@ texts it has no other source for.}
 \item{text_as_paths}{Logical; if \code{TRUE}, ensures \code{text} is treated as a vector of file paths. Otherwise, this will be
 determined if there are no \code{NA}s in \code{text} and every entry is under 500 characters long.}
 
-\item{cache}{Path to a directory in which to save unique results for reuse; defaults to \code{Sys.getenv("RECEPTIVITI_CACHE")}.
-See the Cache section for details.}
+\item{cache}{Path to a directory in which to save unique results for reuse; defaults to
+\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}. See the Cache section for details.}
 
 \item{cache_overwrite}{Logical; if \code{TRUE}, will write results to the cache without reading from it. This could be used
 if you want fresh results to be cached without clearing the cache.}
 
 \item{cache_format}{Format of the cache database; see \code{\link[arrow]{FileFormat}}.
-Defaults to \code{Sys.getenv("RECEPTIVITI_CACHE_FORMAT")}.}
+Defaults to \code{Sys.getenv(}\code{"RECEPTIVITI_CACHE_FORMAT")}.}
 
 \item{key}{API Key; defaults to \code{Sys.getenv("RECEPTIVITI_KEY")}.}
 
@@ -117,7 +120,7 @@ The main function to access the \href{https://www.receptiviti.com}{Receptiviti} 
 \section{Cache}{
 
 By default, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
-cache location (\code{Sys.getenv("RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
+cache location (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
 This ensures that the exact same texts are not re-sent to the API.
 This does, however, add some processing time and disc space usage.
 
