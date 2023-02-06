@@ -151,7 +151,7 @@
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
                         frameworks = getOption("receptiviti_frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
-                        bundle_size = 1000, bundle_byte_limit = 81e5, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
+                        bundle_size = 1000, bundle_byte_limit = 8e6, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
                         clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
                         verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE, text_as_paths = FALSE,
                         cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
@@ -283,7 +283,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     n <- ceiling(nrow(text) / min(1000, max(1, bundle_size)))
     bundles <- split(text, sort(rep_len(seq_len(n), nrow(text))))
     size_fun <- if (text_as_paths) function(b) sum(file.size(b$text)) else object.size
-    for (i in seq_along(bundles)) {
+    for (i in rev(seq_along(bundles))) {
       size <- size_fun(bundles[[i]])
       if (size > bundle_byte_limit) {
         sizes <- vapply(seq_len(nrow(bundles[[i]])), function(r) as.numeric(size_fun(bundles[[i]][r, ])), 0)
@@ -361,7 +361,17 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       res <- NULL
       if (!file.exists(temp_file)) {
         if (make_request) {
-          handler <- curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json)
+          handler <- tryCatch(
+            curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json),
+            error = function(e) e$message
+          )
+          if (is.character(handler)) {
+            stop(if (grepl("libcurl", handler, fixed = TRUE)) {
+              "libcurl encountered an error; try setting the bundle_byte_limit argument to a smaller value"
+            } else {
+              paste("failed to create handler:", handler)
+            }, call. = FALSE)
+          }
           res <- curl::curl_fetch_disk(endpoint, temp_file, handler)
         } else {
           stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)
