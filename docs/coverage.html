@@ -94,7 +94,7 @@ table.table-condensed {
   font-size: 11px;
 }</style>
   <div class="col-md-8 col-md-offset-2">
-    <h2>receptiviti coverage - 88.73%</h2>
+    <h2>receptiviti coverage - 88.84%</h2>
     <div class="tabbable">
       <ul class="nav nav-tabs" data-tabsetid="covr">
         <li class="active">
@@ -106,8 +106,8 @@ table.table-condensed {
       </ul>
       <div class="tab-content" data-tabsetid="covr">
         <div class="tab-pane active" title="Files" data-value="Files" id="tab-covr-1">
-          <div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-8f84d2522d92db6c1527" style="width:100%;height:500px;"></div>
-          <script type="application/json" data-for="htmlwidget-8f84d2522d92db6c1527">{"x":{"filter":"none","vertical":false,"fillContainer":false,"data":[["<a href=\"#\">R/receptiviti.R<\/a>","<a href=\"#\">R/receptiviti_status.R<\/a>"],[608,43],[330,28],[287,28],[43,0],["74","15"],["86.97%","100.00%"]],"container":"<table class=\"row-border\">\n  <thead>\n    <tr>\n      <th>File<\/th>\n      <th>Lines<\/th>\n      <th>Relevant<\/th>\n      <th>Covered<\/th>\n      <th>Missed<\/th>\n      <th>Hits / Line<\/th>\n      <th>Coverage<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"dom":"t","paging":false,"columnDefs":[{"targets":6,"createdCell":"function(td, cellData, rowData, row, col) {\n  var percent = cellData.replace(\"%\", \"\");\n  if (percent > 90) {\n    var grad = \"linear-gradient(90deg, #edfde7 \" + cellData + \", white \" + cellData + \")\";\n  } else if (percent > 75) {\n    var grad = \"linear-gradient(90deg, #f9ffe5 \" + cellData + \", white \" + cellData + \")\";\n  } else {\n    var grad = \"linear-gradient(90deg, #fcece9 \" + cellData + \", white \" + cellData + \")\";\n  }\n  $(td).css(\"background\", grad);\n}\n"},{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false},"callback":"function(table) {\ntable.on('click.dt', 'a', function() {\n  files = $('div#files div');\n  files.not('div.hidden').addClass('hidden');\n  id = $(this).text();\n  files.filter('div[id=\\'' + id + '\\']').removeClass('hidden');\n  $('ul.nav a[data-value=Source]').text(id).tab('show');\n});\n}","selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":["options.columnDefs.0.createdCell","callback"],"jsHooks":[]}</script>
+          <div class="datatables html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-a0cd07d7dff21a443310" style="width:100%;height:500px;"></div>
+          <script type="application/json" data-for="htmlwidget-a0cd07d7dff21a443310">{"x":{"filter":"none","vertical":false,"fillContainer":false,"data":[["<a href=\"#\">R/receptiviti.R<\/a>","<a href=\"#\">R/receptiviti_status.R<\/a>"],[608,47],[330,31],[287,31],[43,0],["74","17"],["86.97%","100.00%"]],"container":"<table class=\"row-border\">\n  <thead>\n    <tr>\n      <th>File<\/th>\n      <th>Lines<\/th>\n      <th>Relevant<\/th>\n      <th>Covered<\/th>\n      <th>Missed<\/th>\n      <th>Hits / Line<\/th>\n      <th>Coverage<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"searching":false,"dom":"t","paging":false,"columnDefs":[{"targets":6,"createdCell":"function(td, cellData, rowData, row, col) {\n  var percent = cellData.replace(\"%\", \"\");\n  if (percent > 90) {\n    var grad = \"linear-gradient(90deg, #edfde7 \" + cellData + \", white \" + cellData + \")\";\n  } else if (percent > 75) {\n    var grad = \"linear-gradient(90deg, #f9ffe5 \" + cellData + \", white \" + cellData + \")\";\n  } else {\n    var grad = \"linear-gradient(90deg, #fcece9 \" + cellData + \", white \" + cellData + \")\";\n  }\n  $(td).css(\"background\", grad);\n}\n"},{"className":"dt-right","targets":[1,2,3,4]}],"order":[],"autoWidth":false,"orderClasses":false},"callback":"function(table) {\ntable.on('click.dt', 'a', function() {\n  files = $('div#files div');\n  files.not('div.hidden').addClass('hidden');\n  id = $(this).text();\n  files.filter('div[id=\\'' + id + '\\']').removeClass('hidden');\n  $('ul.nav a[data-value=Source]').text(id).tab('show');\n});\n}","selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":["options.columnDefs.0.createdCell","callback"],"jsHooks":[]}</script>
         </div>
         <div class="tab-pane" title="Source" data-value="Source" id="tab-covr-2">
           <div id="files">
@@ -2594,7 +2594,7 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">355</td>
-                    <td class="coverage">129<em>x</em></td>
+                    <td class="coverage">127<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      unpack &lt;- function(d) {</pre>
                     </td>
@@ -2615,56 +2615,56 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">358</td>
-                    <td class="coverage">129<em>x</em></td>
+                    <td class="coverage">127<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      json &lt;- jsonlite::toJSON(unname(body), auto_unbox = TRUE)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">359</td>
-                    <td class="coverage">129<em>x</em></td>
+                    <td class="coverage">127<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      temp_file &lt;- paste0(tempdir(), "/", digest::digest(paste0(endpoint, auth, json), serialize = FALSE), ".json")</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">360</td>
-                    <td class="coverage">120<em>x</em></td>
+                    <td class="coverage">118<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!request_cache) unlink(temp_file)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">361</td>
-                    <td class="coverage">129<em>x</em></td>
+                    <td class="coverage">127<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      res &lt;- NULL</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">362</td>
-                    <td class="coverage">129<em>x</em></td>
+                    <td class="coverage">127<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!file.exists(temp_file)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">363</td>
-                    <td class="coverage">125<em>x</em></td>
+                    <td class="coverage">123<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (make_request) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">364</td>
-                    <td class="coverage">124<em>x</em></td>
+                    <td class="coverage">122<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          handler &lt;- curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">365</td>
-                    <td class="coverage">124<em>x</em></td>
+                    <td class="coverage">122<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          res &lt;- curl::curl_fetch_disk(endpoint, temp_file, handler)</pre>
                     </td>
@@ -2699,14 +2699,14 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">370</td>
-                    <td class="coverage">128<em>x</em></td>
+                    <td class="coverage">126<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      result &lt;- if (file.exists(temp_file)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">371</td>
-                    <td class="coverage">128<em>x</em></td>
+                    <td class="coverage">126<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        jsonlite::read_json(temp_file, simplifyVector = TRUE)</pre>
                     </td>
@@ -2734,7 +2734,7 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">375</td>
-                    <td class="coverage">128<em>x</em></td>
+                    <td class="coverage">126<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (!is.null(result$results)) {</pre>
                     </td>
@@ -2881,35 +2881,35 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">396</td>
-                    <td class="coverage">49<em>x</em></td>
+                    <td class="coverage">47<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (!is.null(result$code) &amp;&amp; result$code == 1420 &amp;&amp; attempt &gt; 0) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">397</td>
-                    <td class="coverage">48<em>x</em></td>
+                    <td class="coverage">46<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          unlink(temp_file)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">398</td>
-                    <td class="coverage">48<em>x</em></td>
+                    <td class="coverage">46<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          wait_time &lt;- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">399</td>
-                    <td class="coverage">48<em>x</em></td>
+                    <td class="coverage">46<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">400</td>
-                    <td class="coverage">48<em>x</em></td>
+                    <td class="coverage">46<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          request(body, bin, ids, attempt - 1)</pre>
                     </td>
@@ -4427,251 +4427,279 @@ table.table-condensed {
                   </tr>
                   <tr class="covered">
                     <td class="num">8</td>
-                    <td class="coverage">39<em>x</em></td>
+                    <td class="coverage">40<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  handler &lt;- new_handle(httpauth = 1, userpwd = paste0(key, ":", secret))</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">9</td>
-                    <td class="coverage">39<em>x</em></td>
+                    <td class="coverage">40<em>x</em></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  url &lt;- paste0(sub("(?:/v\\d+)?/+$", "", url), "/v1/ping")</pre>
+                      <pre class="language-r">  url &lt;- paste0(</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">10</td>
-                    <td class="coverage">39<em>x</em></td>
+                    <td class="coverage">40<em>x</em></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  ping &lt;- curl_fetch_memory(url, handler)</pre>
+                      <pre class="language-r">    if (!grepl("http", tolower(url), fixed = TRUE)) "https://",</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">11</td>
-                    <td class="coverage">39<em>x</em></td>
+                    <td class="coverage">40<em>x</em></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  ping$content &lt;- list(message = rawToChar(ping$content))</pre>
+                      <pre class="language-r">    sub("/[Vv]\\d(?:/.*)?$|/+$", "", url), "/v1/ping"</pre>
                     </td>
                   </tr>
-                  <tr class="covered">
+                  <tr class="never">
                     <td class="num">12</td>
-                    <td class="coverage">38<em>x</em></td>
+                    <td class="coverage"></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  if (substr(ping$content, 1, 1) == "{") ping$content &lt;- fromJSON(ping$content$message)</pre>
+                      <pre class="language-r">  )</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">13</td>
-                    <td class="coverage">39<em>x</em></td>
+                    <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  ok &lt;- ping$status_code == 200 &amp;&amp; !length(ping$content$code)</pre>
+                      <pre class="language-r">  if (!grepl("^https?://[^.]+[.:][^.]", url, TRUE)) stop("url does not appear to be valid: ", url)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">14</td>
                     <td class="coverage">39<em>x</em></td>
                     <td class="col-sm-12">
-                      <pre class="language-r">  ping$status_message &lt;- if (ok) {</pre>
+                      <pre class="language-r">  ping &lt;- curl_fetch_memory(url, handler)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
                     <td class="num">15</td>
+                    <td class="coverage">39<em>x</em></td>
+                    <td class="col-sm-12">
+                      <pre class="language-r">  ping$content &lt;- list(message = rawToChar(ping$content))</pre>
+                    </td>
+                  </tr>
+                  <tr class="covered">
+                    <td class="num">16</td>
+                    <td class="coverage">38<em>x</em></td>
+                    <td class="col-sm-12">
+                      <pre class="language-r">  if (substr(ping$content, 1, 1) == "{") ping$content &lt;- fromJSON(ping$content$message)</pre>
+                    </td>
+                  </tr>
+                  <tr class="covered">
+                    <td class="num">17</td>
+                    <td class="coverage">39<em>x</em></td>
+                    <td class="col-sm-12">
+                      <pre class="language-r">  ok &lt;- ping$status_code == 200 &amp;&amp; !length(ping$content$code)</pre>
+                    </td>
+                  </tr>
+                  <tr class="covered">
+                    <td class="num">18</td>
+                    <td class="coverage">39<em>x</em></td>
+                    <td class="col-sm-12">
+                      <pre class="language-r">  ping$status_message &lt;- if (ok) {</pre>
+                    </td>
+                  </tr>
+                  <tr class="covered">
+                    <td class="num">19</td>
                     <td class="coverage">36<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    ping$content$pong</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">16</td>
+                    <td class="num">20</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  } else {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">17</td>
+                    <td class="num">21</td>
                     <td class="coverage">3<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    paste0(</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">18</td>
+                    <td class="num">22</td>
                     <td class="coverage">3<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (length(ping$content$code)) paste0(ping$status_code, " (", ping$content$code, "): "),</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">19</td>
+                    <td class="num">23</td>
                     <td class="coverage">3<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      if (nchar(ping$content$message) &gt; 500 || grepl("&lt;", ping$content$message, fixed = TRUE)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">20</td>
+                    <td class="num">24</td>
                     <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        ping$status_code</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">21</td>
+                    <td class="num">25</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      } else {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">22</td>
+                    <td class="num">26</td>
                     <td class="coverage">2<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        ping$content$message</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">23</td>
+                    <td class="num">27</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      }</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">24</td>
+                    <td class="num">28</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    )</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">25</td>
+                    <td class="num">29</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  }</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">26</td>
+                    <td class="num">30</td>
                     <td class="coverage">39<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  if (verbose) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">27</td>
+                    <td class="num">31</td>
                     <td class="coverage">3<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    message("Status: ", if (ok) "OK" else "ERROR", "\nMessage: ", ping$status_message)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">28</td>
+                    <td class="num">32</td>
                     <td class="coverage">3<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    if (include_headers) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">29</td>
+                    <td class="num">33</td>
                     <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      ping$headers &lt;- strsplit(rawToChar(ping$headers), "[\r\n]+", perl = TRUE)[[1]]</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">30</td>
+                    <td class="num">34</td>
                     <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      json &lt;- regexec("\\{.+\\}", ping$headers)</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">31</td>
+                    <td class="num">35</td>
                     <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      for (i in seq_along(json)) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">32</td>
+                    <td class="num">36</td>
                     <td class="coverage">10<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        if (json[[i]] != -1) {</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">33</td>
+                    <td class="num">37</td>
                     <td class="coverage">2<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          regmatches(ping$headers[[i]], json[[i]]) &lt;- paste(" ", strsplit(toJSON(</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">34</td>
+                    <td class="num">38</td>
                     <td class="coverage">2<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">            fromJSON(regmatches(ping$headers[[i]], json[[i]])),</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">35</td>
+                    <td class="num">39</td>
                     <td class="coverage">2<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">            auto_unbox = TRUE, pretty = TRUE</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">36</td>
+                    <td class="num">40</td>
                     <td class="coverage">2<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">          ), "\n")[[1]], collapse = "\n")</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">37</td>
+                    <td class="num">41</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">        }</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">38</td>
+                    <td class="num">42</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      }</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">39</td>
+                    <td class="num">43</td>
                     <td class="coverage">1<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">      message(paste0("\n", paste(" ", ping$headers, collapse = "\n")))</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">40</td>
+                    <td class="num">44</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">    }</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">41</td>
+                    <td class="num">45</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  }</pre>
                     </td>
                   </tr>
                   <tr class="covered">
-                    <td class="num">42</td>
+                    <td class="num">46</td>
                     <td class="coverage">39<em>x</em></td>
                     <td class="col-sm-12">
                       <pre class="language-r">  invisible(ping)</pre>
                     </td>
                   </tr>
                   <tr class="never">
-                    <td class="num">43</td>
+                    <td class="num">47</td>
                     <td class="coverage"></td>
                     <td class="col-sm-12">
                       <pre class="language-r">}</pre>
