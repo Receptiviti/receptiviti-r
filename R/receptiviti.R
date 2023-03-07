@@ -358,7 +358,17 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
       temp_file <- paste0(tempdir(), "/", digest::digest(paste0(endpoint, auth, json), serialize = FALSE), ".json")
       if (!request_cache) unlink(temp_file)
-      res <- NULL
+      result <- res <- NULL
+      if (file.exists(temp_file)) {
+        result <- tryCatch(
+          jsonlite::read_json(temp_file, simplifyVector = TRUE),
+          error = function(e) NULL
+        )
+        if (is.null(result)) {
+          warning("there was a cached request, but it failed to read in, so remade request")
+          unlink(temp_file)
+        }
+      }
       if (!file.exists(temp_file)) {
         if (make_request) {
           handler <- tryCatch(
@@ -377,10 +387,12 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)
         }
       }
-      result <- if (file.exists(temp_file)) {
-        jsonlite::read_json(temp_file, simplifyVector = TRUE)
-      } else {
-        list(message = rawToChar(res$content))
+      if (is.null(result)) {
+        result <- if (file.exists(temp_file)) {
+          jsonlite::read_json(temp_file, simplifyVector = TRUE)
+        } else {
+          list(message = rawToChar(res$content))
+        }
       }
       if (!is.null(result$results)) {
         result <- result$results

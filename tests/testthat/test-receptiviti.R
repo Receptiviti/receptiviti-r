@@ -34,6 +34,7 @@ Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret)
 output <- paste0(tempdir(), "/single_text.csv")
 
 test_that("default cache works", {
+  receptiviti(text, cache = "")
   expect_identical(
     receptiviti(text, cache = "", make_request = FALSE)$summary.word_count,
     4L
