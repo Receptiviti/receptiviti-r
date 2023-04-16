@@ -151,7 +151,7 @@
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
                         frameworks = getOption("receptiviti_frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
-                        bundle_size = 1000, bundle_byte_limit = 8e6, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
+                        bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
                         clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
                         verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE, text_as_paths = FALSE,
                         cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
@@ -199,7 +199,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           read_in <- TRUE
           text <- unlist(lapply(text, function(f) {
             if (file.exists(f)) {
-              d <- read_csv_arrow(f)
+              d <- tryCatch(
+                read_csv_arrow(f, col_select = c(text_column, id_column)),
+                error = function(e) NULL
+              )
+              if (is.null(d)) stop("failed to read in file ", f, call. = FALSE)
               d <- if (!is.null(id_column) && id_column %in% colnames(d)) {
                 structure(d[, text_column, drop = TRUE], names = d[, id_column, drop = TRUE])
               } else {
@@ -358,17 +362,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
       temp_file <- paste0(tempdir(), "/", digest::digest(paste0(endpoint, auth, json), serialize = FALSE), ".json")
       if (!request_cache) unlink(temp_file)
-      result <- res <- NULL
-      if (file.exists(temp_file)) {
-        result <- tryCatch(
-          jsonlite::read_json(temp_file, simplifyVector = TRUE),
-          error = function(e) NULL
-        )
-        if (is.null(result)) {
-          warning("there was a cached request, but it failed to read in, so remade request")
-          unlink(temp_file)
-        }
-      }
+      res <- NULL
       if (!file.exists(temp_file)) {
         if (make_request) {
           handler <- tryCatch(
@@ -387,12 +381,13 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)
         }
       }
-      if (is.null(result)) {
-        result <- if (file.exists(temp_file)) {
-          jsonlite::read_json(temp_file, simplifyVector = TRUE)
-        } else {
-          list(message = rawToChar(res$content))
-        }
+      result <- if (file.exists(temp_file)) {
+        tryCatch(
+          jsonlite::read_json(temp_file, simplifyVector = TRUE),
+          error = function(e) list(message = e$message, code = 1420)
+        )
+      } else {
+        list(message = rawToChar(res$content))
       }
       if (!is.null(result$results)) {
         result <- result$results
@@ -414,9 +409,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           cbind(id = ids, bin = bin, result)
         }
       } else {
-        if (substr(result$message, 1, 1) == "{") result <- jsonlite::fromJSON(result$message)
-        if (!is.null(result$code) && result$code == 1420 && attempt > 0) {
-          unlink(temp_file)
+        unlink(temp_file)
+        if (length(result$message) == 1 && substr(result$message, 1, 1) == "{") {
+          result <- jsonlite::fromJSON(result$message)
+        }
+        if (length(result$code) == 1 && result$code == 1420 && attempt > 0) {
           wait_time <- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))
           Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)
           request(body, bin, ids, attempt - 1)
