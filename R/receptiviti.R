@@ -151,7 +151,7 @@
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
                         frameworks = getOption("receptiviti_frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
-                        bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 10, clear_cache = FALSE,
+                        bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
                         clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
                         verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE, text_as_paths = FALSE,
                         cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
@@ -382,10 +382,14 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         }
       }
       result <- if (file.exists(temp_file)) {
-        tryCatch(
-          jsonlite::read_json(temp_file, simplifyVector = TRUE),
-          error = function(e) list(message = e$message, code = 1420)
-        )
+        if (is.null(res$type) || grepl("application/json", res$type, fixed = TRUE)) {
+          tryCatch(
+            jsonlite::read_json(temp_file, simplifyVector = TRUE),
+            error = function(e) list(message = "invalid response format")
+          )
+        } else {
+          list(message = "invalid response format")
+        }
       } else {
         list(message = rawToChar(res$content))
       }
@@ -413,7 +417,9 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         if (length(result$message) == 1 && substr(result$message, 1, 1) == "{") {
           result <- jsonlite::fromJSON(result$message)
         }
-        if (length(result$code) == 1 && result$code == 1420 && attempt > 0) {
+        if (attempt > 0 && (length(result$code) == 1 && result$code == 1420) || (
+          length(result$message) == 1 && result$message == "invalid response format"
+        )) {
           wait_time <- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))
           Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)
           request(body, bin, ids, attempt - 1)
