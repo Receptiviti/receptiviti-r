@@ -7,7 +7,8 @@
 \usage{
 receptiviti(text, output = NULL, id = NULL, text_column = NULL,
   id_column = NULL, file_type = "txt", return_text = FALSE,
-  frameworks = getOption("receptiviti_frameworks", "all"),
+  api_args = getOption("receptiviti.api_args", list()),
+  frameworks = getOption("receptiviti.frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
   bundle_byte_limit = 7500000, collapse_lines = FALSE, retry_limit = 50,
   clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
@@ -41,9 +42,12 @@ to overwrite it.}
 
 \item{return_text}{Logical; if \code{TRUE}, \code{text} is included as the first column of the result.}
 
+\item{api_args}{A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
+\code{receptiviti.api_args} option.}
+
 \item{frameworks}{A vector of frameworks to include results from. Texts are always scored with all available framework --
 this just specifies what to return. Defaults to \code{all}, to return all scored frameworks. Can be set by the
-\code{receptiviti_frameworks} option (e.g., \code{options(receptiviti_frameworks = c("liwc", "sallee"))}).}
+\code{receptiviti.frameworks} option (e.g., \code{options(receptiviti.frameworks = c("liwc", "sallee"))}).}
 
 \item{framework_prefix}{Logical; if \code{FALSE}, will remove the framework prefix from column names, which may result in duplicates.
 If this is not specified, and 1 framework is selected, or \code{as_list} is \code{TRUE}, will default to remove prefixes.}
@@ -110,9 +114,9 @@ the HTTP headers.}
 }
 \value{
 A \code{data.frame} with columns for \code{text} (if \code{return_text} is \code{TRUE}; the originally entered text),
-\code{id} (if one was provided), \code{text_hash} (the MD5 hash of the text), and scores from each included framework
-(e.g., \code{summary.word_count} and \code{liwc.i}). If \code{as_list} is \code{TRUE}, returns a list
-with a named entry containing such a \code{data.frame} for each framework.
+\code{id} (if one was provided), \code{text_hash} (the MD5 hash of the text), a column each for relevant entries in \code{api_args},
+and scores from each included framework (e.g., \code{summary.word_count} and \code{liwc.i}). If \code{as_list} is \code{TRUE},
+returns a list with a named entry containing such a \code{data.frame} for each framework.
 }
 \description{
 The main function to access the \href{https://www.receptiviti.com}{Receptiviti} API.
