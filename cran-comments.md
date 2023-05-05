@@ -1,8 +1,8 @@
 ## Test environments
 
-- local Windows 11: 3.6.3, R-release, R-devel
-- local WSL: R-release, R-devel
-- local macOS 10.13.6: R 3.6.3, R-release, R-devel
+- local Windows 11: R-oldrel, R-release, R-devel
+- local Ubuntu 22.04.2 (WSL): R-release, R-devel
+- R-hub macOS 10.13.6: R-release
 
 ## R CMD check results
 

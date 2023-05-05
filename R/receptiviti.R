@@ -156,7 +156,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
                         framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE,
                         retry_limit = 50, clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
                         cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE, verbose = FALSE, overwrite = FALSE,
-                        compress = FALSE, make_request = TRUE, text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE", ""),
+                        compress = FALSE, make_request = TRUE, text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"),
                         cache_overwrite = FALSE, cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
                         key = Sys.getenv("RECEPTIVITI_KEY"), secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL")) {
   # check input
