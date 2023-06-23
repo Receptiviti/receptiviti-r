@@ -68,11 +68,14 @@
 <span>  cache_format <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_CACHE_FORMAT"</span>, <span class="st">"parquet"</span><span class="op">)</span>,</span>
 <span>  key <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_KEY"</span><span class="op">)</span>,</span>
 <span>  secret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_SECRET"</span><span class="op">)</span>,</span>
-<span>  url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_URL"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_URL"</span><span class="op">)</span>,</span>
+<span>  version <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_VERSION"</span><span class="op">)</span>,</span>
+<span>  endpoint <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_ENDPOINT"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">receptiviti_status</span><span class="op">(</span>url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_URL"</span><span class="op">)</span>,</span>
 <span>  key <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_KEY"</span><span class="op">)</span>,</span>
-<span>  secret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_SECRET"</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  secret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_SECRET"</span><span class="op">)</span>,</span>
+<span>  version <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_VERSION"</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  include_headers <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -218,8 +221,18 @@ Defaults to <code>Sys.getenv(</code><code>"RECEPTIVITI_CACHE_FORMAT")</code>.</p
 
 
 <dt>url</dt>
-<dd><p>API endpoint; defaults to <code>Sys.getenv("RECEPTIVITI_URL")</code>, which defaults to
+<dd><p>API URL; defaults to <code>Sys.getenv("RECEPTIVITI_URL")</code>, which defaults to
 <code>"https://api.receptiviti.com/"</code>.</p></dd>
+
+
+<dt>version</dt>
+<dd><p>API version; defaults to <code>Sys.getenv("RECEPTIVITI_VERSION")</code>, which defaults to
+<code>"v1"</code>.</p></dd>
+
+
+<dt>endpoint</dt>
+<dd><p>API endpoint (path name after the version); defaults to <code>Sys.getenv("RECEPTIVITI_ENDPOINT")</code>,
+which defaults to <code>"framework"</code>.</p></dd>
 
 
 <dt>include_headers</dt>

@@ -1,3 +1,8 @@
+# receptiviti 0.1.5
+
+### Features
+* Supports custom API versions and endpoints.
+
 # receptiviti 0.1.4
 
 ### Features

@@ -19,11 +19,14 @@ receptiviti(text, output = NULL, id = NULL, text_column = NULL,
   cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
   key = Sys.getenv("RECEPTIVITI_KEY"),
   secret = Sys.getenv("RECEPTIVITI_SECRET"),
-  url = Sys.getenv("RECEPTIVITI_URL"))
+  url = Sys.getenv("RECEPTIVITI_URL"),
+  version = Sys.getenv("RECEPTIVITI_VERSION"),
+  endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT"))
 
 receptiviti_status(url = Sys.getenv("RECEPTIVITI_URL"),
   key = Sys.getenv("RECEPTIVITI_KEY"),
-  secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE,
+  secret = Sys.getenv("RECEPTIVITI_SECRET"),
+  version = Sys.getenv("RECEPTIVITI_VERSION"), verbose = TRUE,
   include_headers = FALSE)
 }
 \arguments{
@@ -106,8 +109,14 @@ Defaults to \code{Sys.getenv(}\code{"RECEPTIVITI_CACHE_FORMAT")}.}
 
 \item{secret}{API Secret; defaults to \code{Sys.getenv("RECEPTIVITI_SECRET")}.}
 
-\item{url}{API endpoint; defaults to \code{Sys.getenv("RECEPTIVITI_URL")}, which defaults to
+\item{url}{API URL; defaults to \code{Sys.getenv("RECEPTIVITI_URL")}, which defaults to
 \code{"https://api.receptiviti.com/"}.}
+
+\item{version}{API version; defaults to \code{Sys.getenv("RECEPTIVITI_VERSION")}, which defaults to
+\code{"v1"}.}
+
+\item{endpoint}{API endpoint (path name after the version); defaults to \code{Sys.getenv("RECEPTIVITI_ENDPOINT")},
+which defaults to \code{"framework"}.}
 
 \item{include_headers}{Logical; if \code{TRUE}, \code{receptiviti_status}'s verbose message will include
 the HTTP headers.}

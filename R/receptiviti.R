@@ -1,5 +1,7 @@
 .onLoad <- function(lib, pkg) {
   if (Sys.getenv("RECEPTIVITI_URL") == "") Sys.setenv(RECEPTIVITI_URL = "https://api.receptiviti.com/")
+  if (Sys.getenv("RECEPTIVITI_VERSION") == "") Sys.setenv(RECEPTIVITI_VERSION = "v1")
+  if (Sys.getenv("RECEPTIVITI_ENDPOINT") == "") Sys.setenv(RECEPTIVITI_ENDPOINT = "framework")
 }
 
 #' Receptiviti API
@@ -55,8 +57,12 @@
 #' @param verbose Logical; if \code{TRUE}, will show status messages.
 #' @param key API Key; defaults to \code{Sys.getenv("RECEPTIVITI_KEY")}.
 #' @param secret API Secret; defaults to \code{Sys.getenv("RECEPTIVITI_SECRET")}.
-#' @param url API endpoint; defaults to \code{Sys.getenv("RECEPTIVITI_URL")}, which defaults to
+#' @param url API URL; defaults to \code{Sys.getenv("RECEPTIVITI_URL")}, which defaults to
 #' \code{"https://api.receptiviti.com/"}.
+#' @param version API version; defaults to \code{Sys.getenv("RECEPTIVITI_VERSION")}, which defaults to
+#' \code{"v1"}.
+#' @param endpoint API endpoint (path name after the version); defaults to \code{Sys.getenv("RECEPTIVITI_ENDPOINT")},
+#' which defaults to \code{"framework"}.
 #' @param include_headers Logical; if \code{TRUE}, \code{receptiviti_status}'s verbose message will include
 #' the HTTP headers.
 #'
@@ -158,7 +164,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
                         cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE, verbose = FALSE, overwrite = FALSE,
                         compress = FALSE, make_request = TRUE, text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"),
                         cache_overwrite = FALSE, cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
-                        key = Sys.getenv("RECEPTIVITI_KEY"), secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL")) {
+                        key = Sys.getenv("RECEPTIVITI_KEY"), secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
+                        version = Sys.getenv("RECEPTIVITI_VERSION"), endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT")) {
   # check input
   final_res <- text_hash <- bin <- NULL
   if (!is.null(output)) {
@@ -270,7 +277,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     id <- paste0("t", seq_along(text))
   }
   if (!is.numeric(retry_limit)) retry_limit <- 0
-  url <- paste0(sub("(?:/v\\d+)?/+$", "", url), "/v1/")
+  url <- paste0(sub("(?:/v\\d+)?/+$", "", url), "/", version, "/")
   if (!is.list(api_args)) api_args <- as.list(api_args)
   args_hash <- if (length(api_args)) digest::digest(api_args, algo = "crc32") else ""
 
@@ -330,7 +337,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   }
 
   check_cache <- cache && !cache_overwrite
-  endpoint <- paste0(url, "framework/bulk")
+  full_url <- paste0(url, endpoint, "/bulk")
   auth <- paste0(key, ":", secret)
   if (missing(in_memory) && (use_future || cores > 1) && n > cores) in_memory <- FALSE
   request_scratch <- NULL
@@ -363,7 +370,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       if (is.list(d)) as.data.frame(lapply(d, unpack), optional = TRUE) else d
     }
     json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
-    temp_file <- paste0(tempdir(), "/", digest::digest(paste0(endpoint, auth, json), serialize = FALSE), ".json")
+    temp_file <- paste0(tempdir(), "/", digest::digest(paste0(full_url, auth, json), serialize = FALSE), ".json")
     if (!request_cache) unlink(temp_file)
     res <- NULL
     if (!file.exists(temp_file)) {
@@ -379,7 +386,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
             paste("failed to create handler:", handler)
           }, call. = FALSE)
         }
-        res <- curl::curl_fetch_disk(endpoint, temp_file, handler)
+        res <- curl::curl_fetch_disk(full_url, temp_file, handler)
       } else {
         stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)
       }
@@ -517,7 +524,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   environment(request) <- call_env
   environment(process) <- call_env
   for (name in c(
-    "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "endpoint",
+    "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
     "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
     "text_as_paths", "retry_limit", "api_args", "args_hash"
   )) {
