@@ -32,7 +32,8 @@ receptiviti_status(url = Sys.getenv("RECEPTIVITI_URL"),
 \arguments{
 \item{text}{A character vector with text to be processed, path to a directory containing files, or a vector of file paths.
 If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
-each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE}.}
+each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE} (in which case,
+files will be read in as part of bundles at processing time, as is always the case when a directory).}
 
 \item{output}{Path to a \code{.csv} file to write results to. If this already exists, set \code{overwrite} to \code{TRUE}
 to overwrite it.}
@@ -172,6 +173,11 @@ a file for each unique bundle, which is read by as needed by the parallel worker
 a single request to the API, which is why they are limited to 1000 texts and a total size of 10 MB.
 When there is more than one bundle and either \code{cores} is greater than 1 or \code{use_future} is \code{TRUE} (and you've
 externally specified a \code{\link[future]{plan}}), bundles are processed by multiple cores.
+
+If you have texts spread across multiple files, they can be most efficiently processed in parallel
+if each file contains a single text (potentially collapsed from multiple lines). If files contain
+multiple texts (i.e., \code{collapse_lines = FALSE}), then texts need to be read in before bundling
+in order to ensure bundles are under the length limit.
 
 Using \code{future} also allows for progress bars to be specified externally with \code{\link[progressr]{handlers}}; see examples.
 }

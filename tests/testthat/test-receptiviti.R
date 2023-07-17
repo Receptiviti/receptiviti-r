@@ -292,11 +292,16 @@ test_that("spliting oversized bundles works", {
     writeLines(texts[i], files_txt[i])
   }
   expect_true(sum(file.size(files_txt)) > 1e7)
+  arg_hash <- digest::digest(jsonlite::toJSON(list(
+    url = paste0(Sys.getenv("RECEPTIVITI_URL"), "v1/framework/bulk"),
+    key = key,
+    secret = secret
+  ), auto_unbox = TRUE), serialize = FALSE)
   expect_identical(
     receptiviti(temp_source, cache = FALSE)$text_hash,
     unname(vapply(
       list.files(temp_source, "txt", full.names = TRUE),
-      function(f) unname(digest::digest(texts[files_txt == f], serialize = FALSE)),
+      function(f) unname(digest::digest(paste0(arg_hash, texts[files_txt == f]), serialize = FALSE)),
       ""
     ))
   )

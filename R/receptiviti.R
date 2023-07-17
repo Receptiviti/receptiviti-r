@@ -10,7 +10,8 @@
 #'
 #' @param text A character vector with text to be processed, path to a directory containing files, or a vector of file paths.
 #' If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
-#' each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE}.
+#' each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE} (in which case,
+#' files will be read in as part of bundles at processing time, as is always the case when a directory).
 #' @param output Path to a \code{.csv} file to write results to. If this already exists, set \code{overwrite} to \code{TRUE}
 #' to overwrite it.
 #' @param id Vector of unique IDs the same length as \code{text}, to be included in the results.
@@ -111,6 +112,11 @@
 #' When there is more than one bundle and either \code{cores} is greater than 1 or \code{use_future} is \code{TRUE} (and you've
 #' externally specified a \code{\link[future]{plan}}), bundles are processed by multiple cores.
 #'
+#' If you have texts spread across multiple files, they can be most efficiently processed in parallel
+#' if each file contains a single text (potentially collapsed from multiple lines). If files contain
+#' multiple texts (i.e., \code{collapse_lines = FALSE}), then texts need to be read in before bundling
+#' in order to ensure bundles are under the length limit.
+#'
 #' Using \code{future} also allows for progress bars to be specified externally with \code{\link[progressr]{handlers}}; see examples.
 #' @examples
 #' \dontrun{
@@ -154,7 +160,7 @@
 #' @importFrom future.apply future_lapply
 #' @importFrom progressr progressor
 #' @importFrom arrow read_csv_arrow write_csv_arrow schema string write_dataset open_dataset
-#' @importFrom dplyr filter compute collect select
+#' @importFrom dplyr filter compute collect select all_of
 #' @export
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
@@ -199,42 +205,34 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       text_as_paths <- TRUE
       text <- list.files(text, file_type, full.names = TRUE)
     } else if (text_as_paths || all(file.exists(text))) {
-      text_as_paths <- FALSE
+      text_as_paths <- collapse_lines
       if (verbose) message("reading in texts from file list (", round(proc.time()[[3]] - st, 4), ")")
-      if (missing(id_column)) names(text) <- if (length(id) != length(text)) text else id
-      if (all(grepl("\\.csv", text, TRUE))) {
-        if (is.null(text_column)) stop("text appears to point to csv files, but text_column was not specified", call. = FALSE)
-        read_in <- TRUE
-        text <- unlist(lapply(text, function(f) {
-          if (file.exists(f)) {
+      if (!collapse_lines) {
+        if (missing(id_column)) names(text) <- if (length(id) != length(text)) text else id
+        if (all(grepl("\\.csv", text, TRUE))) {
+          if (is.null(text_column)) stop("text appears to point to csv files, but text_column was not specified", call. = FALSE)
+          read_in <- TRUE
+          text <- unlist(lapply(text, function(f) {
             d <- tryCatch(
               read_csv_arrow(f, col_select = c(text_column, id_column)),
               error = function(e) NULL
             )
             if (is.null(d)) stop("failed to read in file ", f, call. = FALSE)
-            d <- if (!is.null(id_column) && id_column %in% colnames(d)) {
+            if (!is.null(id_column) && id_column %in% colnames(d)) {
               structure(d[, text_column, drop = TRUE], names = d[, id_column, drop = TRUE])
             } else {
               d[, text_column, drop = TRUE]
             }
-            if (collapse_lines) d <- paste(d, collapse = " ")
-            d
-          } else {
-            f
-          }
-        }))
-      } else {
-        text <- unlist(lapply(text, function(f) {
-          if (file.exists(f)) {
+          }))
+        } else {
+          text <- unlist(lapply(text, function(f) {
             d <- readLines(f, warn = FALSE, skipNul = TRUE)
             if (collapse_lines) d <- paste(d, collapse = " ")
             d
-          } else {
-            f
-          }
-        }))
+          }))
+        }
+        id <- names(text)
       }
-      if (!collapse_lines) id <- names(text)
     }
   }
   if (is.null(dim(text))) {
@@ -278,8 +276,12 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   }
   if (!is.numeric(retry_limit)) retry_limit <- 0
   url <- paste0(sub("(?:/v\\d+)?/+$", "", url), "/", version, "/")
+  full_url <- paste0(url, endpoint, "/bulk")
   if (!is.list(api_args)) api_args <- as.list(api_args)
-  args_hash <- if (length(api_args)) digest::digest(api_args, algo = "crc32") else ""
+  args_hash <- digest::digest(jsonlite::toJSON(c(
+    api_args,
+    url = full_url, key = key, secret = secret
+  ), auto_unbox = TRUE), serialize = FALSE)
 
   # ping API
   if (make_request) {
@@ -337,7 +339,6 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   }
 
   check_cache <- cache && !cache_overwrite
-  full_url <- paste0(url, endpoint, "/bulk")
   auth <- paste0(key, ":", secret)
   if (missing(in_memory) && (use_future || cores > 1) && n > cores) in_memory <- FALSE
   request_scratch <- NULL
@@ -347,7 +348,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     dir.create(request_scratch, FALSE)
     if (clear_scratch_cache) on.exit(unlink(request_scratch, recursive = TRUE))
     bundles <- vapply(bundles, function(b) {
-      scratch_bundle <- paste0(request_scratch, digest(b), ".rds")
+      scratch_bundle <- paste0(request_scratch, digest::digest(b), ".rds")
       if (!file.exists(scratch_bundle)) saveRDS(b, scratch_bundle, compress = FALSE)
       scratch_bundle
     }, "", USE.NAMES = FALSE)
@@ -370,7 +371,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       if (is.list(d)) as.data.frame(lapply(d, unpack), optional = TRUE) else d
     }
     json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
-    temp_file <- paste0(tempdir(), "/", digest::digest(paste0(full_url, auth, json), serialize = FALSE), ".json")
+    temp_file <- paste0(tempdir(), "/", digest::digest(json, serialize = FALSE), ".json")
     if (!request_cache) unlink(temp_file)
     res <- NULL
     if (!file.exists(temp_file)) {
@@ -453,12 +454,12 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     if (text_as_paths) {
       if (all(grepl("\\.csv", text, TRUE))) {
         if (is.null(text_column)) stop("files appear to be csv, but no text_column was specified", call. = FALSE)
-        text <- vapply(text, function(f) paste(arrow::read_csv_arrow(f)[, text_column], collapse = " "), "")
+        text <- vapply(text, function(f) paste(arrow::read_csv_arrow(f, col_select = all_of(text_column))[[1]], collapse = " "), "")
       } else {
         text <- vapply(text, function(f) paste(readLines(f, warn = FALSE, skipNul = TRUE), collapse = " "), "")
       }
     }
-    bundle$hashes <- paste0(args_hash, vapply(text, digest::digest, "", serialize = FALSE))
+    bundle$hashes <- paste0(vapply(paste0(args_hash, text), digest::digest, "", serialize = FALSE))
     initial <- paste0("h", substr(bundle$hashes, 1, 1))
     set <- !is.na(text) & text != "" & text != "logical(0)" & !duplicated(bundle$hashes)
     res_cached <- res_fresh <- NULL
