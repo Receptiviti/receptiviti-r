@@ -3,6 +3,12 @@
 ### Features
 * Supports custom API versions and endpoints.
 
+### Improvements
+* Reworks text hashing for improved cache handling.
+
+### Bug Fixes
+* Fixes partial cache updating.
+
 # receptiviti 0.1.4
 
 ### Features

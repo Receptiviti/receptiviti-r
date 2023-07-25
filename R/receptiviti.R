@@ -563,8 +563,9 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         initialized <- FALSE
       }
     }
+    exclude <- c("id", names(api_args))
     if (!initialized) {
-      su <- !colnames(final_res) %in% c("id", names(api_args))
+      su <- !colnames(final_res) %in% exclude
       if (sum(su) > 2) {
         initial <- final_res[1, su]
         initial$text_hash <- ""
@@ -583,7 +584,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       }
     } else {
       fresh <- final_res[
-        !duplicated(final_res$text_hash), !colnames(final_res) %in% c("text_hash", names(api_args)),
+        !duplicated(final_res$text_hash), !colnames(final_res) %in% names(api_args),
         drop = FALSE
       ]
       cached <- dplyr::filter(db, bin %in% unique(fresh$bin), text_hash %in% fresh$text_hash)
@@ -600,7 +601,10 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
               if (sum(uncached_hashes) > 1) "s", " (", round(proc.time()[[3]] - st, 4), ")"
             )
           }
-          arrow::write_dataset(fresh[uncached_hashes, ], temp, partitioning = "bin", format = cache_format)
+          arrow::write_dataset(
+            fresh[uncached_hashes, !colnames(fresh) %in% exclude], temp,
+            partitioning = "bin", format = cache_format
+          )
         }
       }
     }
