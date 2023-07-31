@@ -320,3 +320,20 @@ test_that("rate limit is handled", {
     rep(5L, 50)
   )
 })
+
+skip_if(tryCatch(
+  {
+    receptiviti_status(Sys.getenv("RECEPTIVITI_URL_TEST"))
+    FALSE
+  },
+  error = function(e) TRUE
+), "test API is not reachable")
+
+test_that("different versions and endpoints are handled", {
+  res <- receptiviti(
+    texts,
+    cache = FALSE, version = "v2", endpoint = "taxonomies", url = Sys.getenv("RECEPTIVITI_URL_TEST"),
+    key = Sys.getenv("RECEPTIVITI_KEY_TEST"), secret = Sys.getenv("RECEPTIVITI_SECRET_TEST")
+  )
+  expect_true(nrow(res) == 50)
+})

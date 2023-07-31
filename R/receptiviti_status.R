@@ -2,14 +2,13 @@
 #' @export
 
 receptiviti_status <- function(url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
-                               secret = Sys.getenv("RECEPTIVITI_SECRET"), version = Sys.getenv("RECEPTIVITI_VERSION"),
-                               verbose = TRUE, include_headers = FALSE) {
+                               secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE, include_headers = FALSE) {
   if (key == "") stop("specify your key, or set it to the RECEPTIVITI_KEY environment variable", call. = FALSE)
   if (secret == "") stop("specify your secret, or set it to the RECEPTIVITI_SECRET environment variable", call. = FALSE)
   handler <- new_handle(httpauth = 1, userpwd = paste0(key, ":", secret))
   url <- paste0(
     if (!grepl("http", tolower(url), fixed = TRUE)) "https://",
-    sub("/[Vv]\\d(?:/.*)?$|/+$", "", url), "/", version, "/ping"
+    sub("/[Vv]\\d(?:/.*)?$|/+$", "", url), "/v1/ping"
   )
   if (!grepl("^https?://[^.]+[.:][^.]", url, TRUE)) stop("url does not appear to be valid: ", url)
   ping <- curl_fetch_memory(url, handler)

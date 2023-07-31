@@ -1,7 +1,5 @@
 .onLoad <- function(lib, pkg) {
   if (Sys.getenv("RECEPTIVITI_URL") == "") Sys.setenv(RECEPTIVITI_URL = "https://api.receptiviti.com/")
-  if (Sys.getenv("RECEPTIVITI_VERSION") == "") Sys.setenv(RECEPTIVITI_VERSION = "v1")
-  if (Sys.getenv("RECEPTIVITI_ENDPOINT") == "") Sys.setenv(RECEPTIVITI_ENDPOINT = "framework")
 }
 
 #' Receptiviti API
@@ -275,6 +273,15 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     id <- paste0("t", seq_along(text))
   }
   if (!is.numeric(retry_limit)) retry_limit <- 0
+  url_parts <- regmatches(url, gregexec("/([Vv]\\d)/?([^/]+)?", url))[[1]]
+  if (version == "") version <- if (length(url_parts) > 1) url_parts[[2]] else "v1"
+  if (endpoint == "") {
+    endpoint <- if (length(url_parts) > 2) {
+      url_parts[[3]]
+    } else {
+      if (tolower(version) == "v1") "framework" else "taxonomies"
+    }
+  }
   url <- paste0(sub("(?:/v\\d+)?/+$", "", url), "/", version, "/")
   full_url <- paste0(url, endpoint, "/bulk")
   if (!is.list(api_args)) api_args <- as.list(api_args)
@@ -404,8 +411,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     } else {
       list(message = rawToChar(res$content))
     }
-    if (!is.null(result$results)) {
-      result <- result$results
+    if (!is.null(result$results) || is.null(result$message)) {
+      if (!is.null(result$results)) result <- result$results
       if ("error" %in% names(result)) {
         su <- !is.na(result$error$code)
         errors <- result[su & !duplicated(result$error$code), "error"]
@@ -420,7 +427,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       }
       result <- unpack(result[!names(result) %in% c("response_id", "language", "version", "error")])
       if (!is.null(result) && nrow(result)) {
-        colnames(result)[1] <- "text_hash"
+        if (colnames(result)[1] == "request_id") {
+          colnames(result)[1] <- "text_hash"
+        } else {
+          result <- cbind(text_hash = vapply(body, "[[", "", "request_id"), result)
+        }
         cbind(id = ids, bin = bin, result)
       }
     } else {
@@ -571,8 +582,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         initial$text_hash <- ""
         initial$bin <- "h"
         initial[, !colnames(initial) %in% c(
-          "bin", "text_hash", "summary.word_count", "summary.sentence_count"
-        )] <- .1
+          "summary.word_count", "summary.sentence_count"
+        ) & !vapply(initial, is.character, TRUE)] <- .1
         initial <- rbind(initial, final_res[, colnames(initial)])
         if (verbose) {
           message(
