@@ -214,7 +214,7 @@ row for each text, and columns for each framework variable:</p>
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"texts to score"</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b                  3</span></span>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045                  3</span></span>
 <span><span class="co">#&gt;   summary.words_per_sentence summary.sentence_count</span></span>
 <span><span class="co">#&gt; 1                          3                      1</span></span></code></pre></div>
 <p>Here, the first column (<code>text_hash</code>) is the MD5 hash of
@@ -226,13 +226,13 @@ cache.</p>
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"texts to score"</span>, return_text <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
 <span><span class="co">#&gt;             text                        text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1 texts to score b771013281f84420644c3fd2289f3d9b                  3</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 texts to score d4db6ab5080a540410c4429884c93045                  3</span></span></code></pre></div>
 <p>You can also select frameworks before they are all returned:</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"texts to score"</span>, frameworks <span class="op">=</span> <span class="st">"liwc"</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash analytical_thinking clout authentic</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b                0.99   0.5      0.01</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045                0.99   0.5      0.01</span></span></code></pre></div>
 <p>By default, a single framework will have column names without the
 framework name, but you can retain these with
 <code>framework_prefix = TRUE</code>:</p>
@@ -243,14 +243,14 @@ framework name, but you can retain these with
 <span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash liwc.analytical_thinking liwc.clout</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b                     0.99        0.5</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045                     0.99        0.5</span></span></code></pre></div>
 <p>You can also have results returned as a list of frameworks, which
 might make it easier to work with each separately:</p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"texts to score"</span>, as_list <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">$</span><span class="va">personality</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash extraversion   active assertive</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b     40.60506 43.54977  32.54014</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045     40.60506 43.54977  32.54014</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="aligning-results">Aligning Results<a class="anchor" aria-label="anchor" href="#aligning-results"></a>
@@ -265,18 +265,18 @@ originally, including any duplicates or invalid entries.</p>
 <span><span class="co"># combine data and results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">results</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;   id   text                        text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1  1 text a 468c24aa7dac18b7517469361676bffb                  2</span></span>
+<span><span class="co">#&gt; 1  1 text a e6d6e99c61fc084dfd33d7644c334ee6                  2</span></span>
 <span><span class="co">#&gt; 2  2   &lt;NA&gt;                             &lt;NA&gt;                 NA</span></span>
 <span><span class="co">#&gt; 3  3                                    &lt;NA&gt;                 NA</span></span>
-<span><span class="co">#&gt; 4  4 text a 468c24aa7dac18b7517469361676bffb                  2</span></span></code></pre></div>
+<span><span class="co">#&gt; 4  4 text a e6d6e99c61fc084dfd33d7644c334ee6                  2</span></span></code></pre></div>
 <p>You can also provide a vector of unique IDs to be returned with
 results so they can be merged with other data:</p>
 <div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"text a"</span>, <span class="st">"text b"</span><span class="op">)</span>, id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">3</span><span class="op">]</span></span>
 <span><span class="co">#&gt;   id                        text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1  a 468c24aa7dac18b7517469361676bffb                  2</span></span>
-<span><span class="co">#&gt; 2  b 0601f4c2ab4153a2fc4a1dc506c5fb9e                  2</span></span>
+<span><span class="co">#&gt; 1  a e6d6e99c61fc084dfd33d7644c334ee6                  2</span></span>
+<span><span class="co">#&gt; 2  b 40a54fe44d79d785d15ea498f086365b                  2</span></span>
 <span></span>
 <span><span class="co"># merge with a new dataset</span></span>
 <span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -285,10 +285,10 @@ results so they can be merged with other data:</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">results</span>, by.x <span class="op">=</span> <span class="st">"type"</span>, by.y <span class="op">=</span> <span class="st">"id"</span><span class="op">)</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;   type id                        text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1    a a1 468c24aa7dac18b7517469361676bffb                  2</span></span>
-<span><span class="co">#&gt; 2    a a2 468c24aa7dac18b7517469361676bffb                  2</span></span>
-<span><span class="co">#&gt; 3    b b1 0601f4c2ab4153a2fc4a1dc506c5fb9e                  2</span></span>
-<span><span class="co">#&gt; 4    b b2 0601f4c2ab4153a2fc4a1dc506c5fb9e                  2</span></span></code></pre></div>
+<span><span class="co">#&gt; 1    a a1 e6d6e99c61fc084dfd33d7644c334ee6                  2</span></span>
+<span><span class="co">#&gt; 2    a a2 e6d6e99c61fc084dfd33d7644c334ee6                  2</span></span>
+<span><span class="co">#&gt; 3    b b1 40a54fe44d79d785d15ea498f086365b                  2</span></span>
+<span><span class="co">#&gt; 4    b b2 40a54fe44d79d785d15ea498f086365b                  2</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="saved-results">Saved Results<a class="anchor" aria-label="anchor" href="#saved-results"></a>
@@ -299,7 +299,7 @@ results so they can be merged with other data:</p>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"../results.csv"</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b                  3</span></span>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045                  3</span></span>
 <span><span class="co">#&gt;   summary.words_per_sentence summary.sentence_count</span></span>
 <span><span class="co">#&gt; 1                          3                      1</span></span></code></pre></div>
 <p>And this can be compressed:</p>
@@ -311,7 +311,7 @@ results so they can be merged with other data:</p>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"../results.csv.xz"</span><span class="op">)</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                          text_hash summary.word_count</span></span>
-<span><span class="co">#&gt; 1 b771013281f84420644c3fd2289f3d9b                  3</span></span>
+<span><span class="co">#&gt; 1 d4db6ab5080a540410c4429884c93045                  3</span></span>
 <span><span class="co">#&gt;   summary.words_per_sentence summary.sentence_count</span></span>
 <span><span class="co">#&gt; 1                          3                      1</span></span></code></pre></div>
 <p>In this case, the compressed file is 85% smaller.</p>
@@ -361,7 +361,7 @@ but need to restart R, you can move the cached responses out of
 <p>The <code>receptiviti</code> function will handle splitting texts
 into bundles, so the limit on how many texts you can process at once
 will come down to your system’s amount of random access memory (RAM).
-Several thousand texts should be fine, but getting into millions of
+Several thousands of texts should be fine, but getting into millions of
 texts, you may not be able to have all of the results loaded at once. To
 get around this, you can fully process subsets of your texts.</p>
 <p>A benefit of processing more texts at once is that requests can be

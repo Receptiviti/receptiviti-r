@@ -271,7 +271,7 @@ them after restarting.
 
 The `receptiviti` function will handle splitting texts into bundles, so the limit on how many texts
 you can process at once will come down to your system's amount of random access memory (RAM).
-Several thousand texts should be fine, but getting into millions of texts, you may not be able
+Several thousands of texts should be fine, but getting into millions of texts, you may not be able
 to have all of the results loaded at once. To get around this, you can fully process subsets
 of your texts.
 
@@ -286,5 +286,3 @@ the cache while it is being written to by another instance).
 Disabling the cache is also more efficient, but you may want to ensure you are not
 sending duplicate texts between calls. The function handles duplicate texts within calls (only
 ever sending unique texts), but depends on the cache to avoid sending duplicates between calls.
-
-

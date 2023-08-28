@@ -163,7 +163,7 @@ and you want to process a set of text you already processed in the current R ses
 
 Another temporary cache is made when \code{in_memory} is \code{FALSE}, which is the default when processing
 in parallel (when \code{cores} is over \code{1} or \code{use_future} is \code{TRUE}). This contains
-a file for each unique bundle, which is read by as needed by the parallel workers.
+a file for each unique bundle, which is read in as needed by the parallel workers.
 }
 
 \section{Parallelization}{

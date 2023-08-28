@@ -102,7 +102,7 @@
 #'
 #' Another temporary cache is made when \code{in_memory} is \code{FALSE}, which is the default when processing
 #' in parallel (when \code{cores} is over \code{1} or \code{use_future} is \code{TRUE}). This contains
-#' a file for each unique bundle, which is read by as needed by the parallel workers.
+#' a file for each unique bundle, which is read in as needed by the parallel workers.
 #'
 #' @section Parallelization:
 #' \code{text}s are split into bundles based on the \code{bundle_size} argument. Each bundle represents
@@ -201,7 +201,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     if (length(text) == 1 && dir.exists(text)) {
       if (verbose) message("reading in texts from directory: ", text, " (", round(proc.time()[[3]] - st, 4), ")")
       text_as_paths <- TRUE
-      text <- list.files(text, file_type, full.names = TRUE)
+      text <- normalizePath(list.files(text, file_type, full.names = TRUE), "/", FALSE)
     } else if (text_as_paths || all(file.exists(text))) {
       text_as_paths <- collapse_lines
       if (verbose) message("reading in texts from file list (", round(proc.time()[[3]] - st, 4), ")")
@@ -231,7 +231,10 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         }
         id <- names(text)
       }
+    } else if (length(text) == 1 && dirname(text) != "." && dir.exists(dirname(text))) {
+      stop("text appears to be a directory, but it does not exist")
     }
+    if (text_as_paths && missing(id)) id <- text
   }
   if (is.null(dim(text))) {
     if (!read_in) {
@@ -263,6 +266,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     }
   }
   if (!is.character(text)) text <- as.character(text)
+  if (!length(text)) stop("no texts were found after resolving the text argument")
   if (length(id) && !is.character(id)) id <- as.character(id)
   provided_id <- FALSE
   if (length(id)) {

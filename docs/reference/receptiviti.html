@@ -74,8 +74,7 @@
 <span></span>
 <span><span class="fu">receptiviti_status</span><span class="op">(</span>url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_URL"</span><span class="op">)</span>,</span>
 <span>  key <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_KEY"</span><span class="op">)</span>,</span>
-<span>  secret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_SECRET"</span><span class="op">)</span>,</span>
-<span>  version <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_VERSION"</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  secret <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"RECEPTIVITI_SECRET"</span><span class="op">)</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  include_headers <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -277,7 +276,7 @@ R session ends. You might want to set this to <code>FALSE</code> if a new framew
 and you want to process a set of text you already processed in the current R session without restarting.</p>
 <p>Another temporary cache is made when <code>in_memory</code> is <code>FALSE</code>, which is the default when processing
 in parallel (when <code>cores</code> is over <code>1</code> or <code>use_future</code> is <code>TRUE</code>). This contains
-a file for each unique bundle, which is read by as needed by the parallel workers.</p>
+a file for each unique bundle, which is read in as needed by the parallel workers.</p>
     </div>
     <div class="section level2">
     <h2 id="parallelization">Parallelization<a class="anchor" aria-label="anchor" href="#parallelization"></a></h2>
