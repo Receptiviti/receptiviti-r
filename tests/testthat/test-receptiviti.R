@@ -248,6 +248,7 @@ test_that("reading from files works", {
   writeLines(texts[1], paste0(temp_source, "0.txt"))
 
   txt_directory <- receptiviti(temp_source, cache = temp_cache, bundle_size = 25)
+  expect_identical(receptiviti(dir = temp_source, cache = temp_cache), txt_directory)
   initial <- cbind(id = files_txt, initial)
   expect_true(all(initial$text_hash %in% txt_directory$text_hash))
   expect_false(anyDuplicated(txt_directory$text_hash) == 0)
@@ -274,6 +275,7 @@ test_that("reading from files works", {
   expect_equal(csv_directory, initial)
 
   expect_equal(receptiviti(file_txt, cache = temp_cache, in_memory = FALSE)[, -1], initial[, -1])
+  expect_equal(receptiviti(files = file_txt, cache = temp_cache)[, -1], initial[, -1])
   expect_equal(
     receptiviti(file_txt, collapse_lines = TRUE, cache = temp_cache)[, -1],
     receptiviti(paste(texts, collapse = " "), cache = temp_cache)

@@ -10,10 +10,13 @@
 #' If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
 #' each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE} (in which case,
 #' files will be read in as part of bundles at processing time, as is always the case when a directory).
+#' Use \code{files} to more reliably enter files, or \code{dir} to more reliably specify a directory.
 #' @param output Path to a \code{.csv} file to write results to. If this already exists, set \code{overwrite} to \code{TRUE}
 #' to overwrite it.
 #' @param id Vector of unique IDs the same length as \code{text}, to be included in the results.
 #' @param text_column,id_column Column name of text/id, if \code{text} is a matrix-like object, or a path to a csv file.
+#' @param files A list of file paths, as alternate entry to \code{text}.
+#' @param dir A directory to search for files in, as alternate entry to \code{text}.
 #' @param file_type File extension to search for, if \code{text} is the path to a directory containing files to be read in.
 #' @param return_text Logical; if \code{TRUE}, \code{text} is included as the first column of the result.
 #' @param api_args A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
@@ -130,11 +133,11 @@
 #'
 #' # score many texts in separate files
 #' ## defaults to look for .txt files
-#' file_results <- receptiviti("./path/to/txt_folder")
+#' file_results <- receptiviti(dir = "./path/to/txt_folder")
 #'
 #' ## could be .csv
 #' file_results <- receptiviti(
-#'   "./path/to/csv_folder",
+#'   dir = "./path/to/csv_folder",
 #'   text_column = "text", file_type = "csv"
 #' )
 #'
@@ -161,14 +164,15 @@
 #' @importFrom dplyr filter compute collect select all_of
 #' @export
 
-receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, file_type = "txt", return_text = FALSE,
-                        api_args = getOption("receptiviti.api_args", list()), frameworks = getOption("receptiviti.frameworks", "all"),
-                        framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE,
-                        retry_limit = 50, clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
-                        cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE, verbose = FALSE, overwrite = FALSE,
-                        compress = FALSE, make_request = TRUE, text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"),
-                        cache_overwrite = FALSE, cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
-                        key = Sys.getenv("RECEPTIVITI_KEY"), secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
+receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
+                        file_type = "txt", return_text = FALSE, api_args = getOption("receptiviti.api_args", list()),
+                        frameworks = getOption("receptiviti.frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
+                        bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
+                        clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
+                        in_memory = TRUE, verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE,
+                        text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
+                        cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"), key = Sys.getenv("RECEPTIVITI_KEY"),
+                        secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
                         version = Sys.getenv("RECEPTIVITI_VERSION"), endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT")) {
   # check input
   final_res <- text_hash <- bin <- NULL
@@ -191,14 +195,26 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     }
   }
   st <- proc.time()[[3]]
-  if (missing(text)) stop("enter text as the first argument", call. = FALSE)
+  text_as_dir <- FALSE
+  if (missing(text)) {
+    if (!is.null(dir)) {
+      if (!dir.exists(dir)) stop("entered dir does not exist", call. = FALSE)
+      text <- dir
+      text_as_dir <- TRUE
+    } else if (!is.null(files)) {
+      text <- files
+      text_as_paths <- TRUE
+    } else {
+      stop("enter text as the first argument, or use files or dir", call. = FALSE)
+    }
+  }
   if (text_as_paths) {
     if (anyNA(text)) stop("NAs are not allowed in text when being treated as file paths", call. = FALSE)
     if (!all(file.exists(text))) stop("not all of the files in text exist", call. = FALSE)
   }
   read_in <- FALSE
-  if (text_as_paths || (is.character(text) && !anyNA(text) && all(nchar(text) < 500))) {
-    if (length(text) == 1 && dir.exists(text)) {
+  if (text_as_dir || text_as_paths || (is.character(text) && !anyNA(text) && all(nchar(text) < 500))) {
+    if (text_as_dir || length(text) == 1 && dir.exists(text)) {
       if (verbose) message("reading in texts from directory: ", text, " (", round(proc.time()[[3]] - st, 4), ")")
       text_as_paths <- TRUE
       text <- normalizePath(list.files(text, file_type, full.names = TRUE), "/", FALSE)
@@ -234,7 +250,10 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     } else if (length(text) == 1 && dirname(text) != "." && dir.exists(dirname(text))) {
       stop("text appears to be a directory, but it does not exist")
     }
-    if (text_as_paths && missing(id)) id <- text
+    if (text_as_paths && missing(id)) {
+      id <- text
+      if (anyDuplicated(id)) id <- names(unlist(lapply(split(id, factor(id, unique(id))), seq_along)))
+    }
   }
   if (is.null(dim(text))) {
     if (!read_in) {

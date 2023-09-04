@@ -36,11 +36,11 @@ multi <- receptiviti(c("first text to score", "second text"), "filename.csv")
 
 # score texts in separate files
 ## defaults to look for .txt files
-file_results <- receptiviti("./path/to/txt_folder")
+file_results <- receptiviti(dir = "./path/to/txt_folder")
 
 ## could be .csv
 file_results <- receptiviti(
-  "./path/to/csv_folder",
+  dir = "./path/to/csv_folder",
   text_column = "text", file_type = "csv"
 )
 

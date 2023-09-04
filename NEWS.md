@@ -4,6 +4,7 @@
 * Supports custom API versions and endpoints.
 
 ### Improvements
+* Adds `files` and `dir` arguments for clearer input.
 * Returns file names as IDs when `text_as_paths` is `TRUE`.
 * Reworks text hashing for improved cache handling.
 

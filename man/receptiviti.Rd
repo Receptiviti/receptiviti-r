@@ -6,9 +6,9 @@
 \title{Receptiviti API}
 \usage{
 receptiviti(text, output = NULL, id = NULL, text_column = NULL,
-  id_column = NULL, file_type = "txt", return_text = FALSE,
-  api_args = getOption("receptiviti.api_args", list()),
-  frameworks = getOption("receptiviti.frameworks", "all"),
+  id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
+  return_text = FALSE, api_args = getOption("receptiviti.api_args",
+  list()), frameworks = getOption("receptiviti.frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
   bundle_byte_limit = 7500000, collapse_lines = FALSE, retry_limit = 50,
   clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
@@ -32,7 +32,8 @@ receptiviti_status(url = Sys.getenv("RECEPTIVITI_URL"),
 \item{text}{A character vector with text to be processed, path to a directory containing files, or a vector of file paths.
 If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
 each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE} (in which case,
-files will be read in as part of bundles at processing time, as is always the case when a directory).}
+files will be read in as part of bundles at processing time, as is always the case when a directory).
+Use \code{files} to more reliably enter files, or \code{dir} to more reliably specify a directory.}
 
 \item{output}{Path to a \code{.csv} file to write results to. If this already exists, set \code{overwrite} to \code{TRUE}
 to overwrite it.}
@@ -40,6 +41,10 @@ to overwrite it.}
 \item{id}{Vector of unique IDs the same length as \code{text}, to be included in the results.}
 
 \item{text_column, id_column}{Column name of text/id, if \code{text} is a matrix-like object, or a path to a csv file.}
+
+\item{files}{A list of file paths, as alternate entry to \code{text}.}
+
+\item{dir}{A directory to search for files in, as alternate entry to \code{text}.}
 
 \item{file_type}{File extension to search for, if \code{text} is the path to a directory containing files to be read in.}
 
@@ -195,11 +200,11 @@ multi <- receptiviti(c("first text to score", "second text"), "filename.csv")
 
 # score many texts in separate files
 ## defaults to look for .txt files
-file_results <- receptiviti("./path/to/txt_folder")
+file_results <- receptiviti(dir = "./path/to/txt_folder")
 
 ## could be .csv
 file_results <- receptiviti(
-  "./path/to/csv_folder",
+  dir = "./path/to/csv_folder",
   text_column = "text", file_type = "csv"
 )
 

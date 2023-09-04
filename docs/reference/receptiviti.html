@@ -55,9 +55,9 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">receptiviti</span><span class="op">(</span><span class="va">text</span>, output <span class="op">=</span> <span class="cn">NULL</span>, id <span class="op">=</span> <span class="cn">NULL</span>, text_column <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  id_column <span class="op">=</span> <span class="cn">NULL</span>, file_type <span class="op">=</span> <span class="st">"txt"</span>, return_text <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  api_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"receptiviti.api_args"</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  frameworks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"receptiviti.frameworks"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  id_column <span class="op">=</span> <span class="cn">NULL</span>, files <span class="op">=</span> <span class="cn">NULL</span>, dir <span class="op">=</span> <span class="cn">NULL</span>, file_type <span class="op">=</span> <span class="st">"txt"</span>,</span>
+<span>  return_text <span class="op">=</span> <span class="cn">FALSE</span>, api_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"receptiviti.api_args"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, frameworks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"receptiviti.frameworks"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  framework_prefix <span class="op">=</span> <span class="cn">TRUE</span>, as_list <span class="op">=</span> <span class="cn">FALSE</span>, bundle_size <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  bundle_byte_limit <span class="op">=</span> <span class="fl">7500000</span>, collapse_lines <span class="op">=</span> <span class="cn">FALSE</span>, retry_limit <span class="op">=</span> <span class="fl">50</span>,</span>
 <span>  clear_cache <span class="op">=</span> <span class="cn">FALSE</span>, clear_scratch_cache <span class="op">=</span> <span class="cn">TRUE</span>, request_cache <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -84,7 +84,8 @@
 <dd><p>A character vector with text to be processed, path to a directory containing files, or a vector of file paths.
 If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
 each line or row is treated as a separate text, unless <code>collapse_lines</code> is <code>TRUE</code> (in which case,
-files will be read in as part of bundles at processing time, as is always the case when a directory).</p></dd>
+files will be read in as part of bundles at processing time, as is always the case when a directory).
+Use <code>files</code> to more reliably enter files, or <code>dir</code> to more reliably specify a directory.</p></dd>
 
 
 <dt>output</dt>
@@ -98,6 +99,14 @@ to overwrite it.</p></dd>
 
 <dt>text_column, id_column</dt>
 <dd><p>Column name of text/id, if <code>text</code> is a matrix-like object, or a path to a csv file.</p></dd>
+
+
+<dt>files</dt>
+<dd><p>A list of file paths, as alternate entry to <code>text</code>.</p></dd>
+
+
+<dt>dir</dt>
+<dd><p>A directory to search for files in, as alternate entry to <code>text</code>.</p></dd>
 
 
 <dt>file_type</dt>
@@ -308,11 +317,11 @@ in order to ensure bundles are under the length limit.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># score many texts in separate files</span></span></span>
 <span class="r-in"><span><span class="co">## defaults to look for .txt files</span></span></span>
-<span class="r-in"><span><span class="va">file_results</span> <span class="op">&lt;-</span> <span class="fu">receptiviti</span><span class="op">(</span><span class="st">"./path/to/txt_folder"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">file_results</span> <span class="op">&lt;-</span> <span class="fu">receptiviti</span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"./path/to/txt_folder"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## could be .csv</span></span></span>
 <span class="r-in"><span><span class="va">file_results</span> <span class="op">&lt;-</span> <span class="fu">receptiviti</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="st">"./path/to/csv_folder"</span>,</span></span>
+<span class="r-in"><span>  dir <span class="op">=</span> <span class="st">"./path/to/csv_folder"</span>,</span></span>
 <span class="r-in"><span>  text_column <span class="op">=</span> <span class="st">"text"</span>, file_type <span class="op">=</span> <span class="st">"csv"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
