@@ -183,7 +183,8 @@ if each file contains a single text (potentially collapsed from multiple lines).
 multiple texts (i.e., \code{collapse_lines = FALSE}), then texts need to be read in before bundling
 in order to ensure bundles are under the length limit.
 
-Using \code{future} also allows for progress bars to be specified externally with \code{\link[progressr]{handlers}}; see examples.
+Whether processing in serial or parallel, progress bars can be specified externally with
+\code{\link[progressr]{handlers}}; see examples.
 }
 
 \examples{

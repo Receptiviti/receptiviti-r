@@ -9,6 +9,7 @@
 * Reworks text hashing for improved cache handling.
 
 ### Bug Fixes
+* Avoids unnecessary cache rewrites.
 * Fixes partial cache updating.
 
 # receptiviti 0.1.4

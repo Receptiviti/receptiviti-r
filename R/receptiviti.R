@@ -118,7 +118,8 @@
 #' multiple texts (i.e., \code{collapse_lines = FALSE}), then texts need to be read in before bundling
 #' in order to ensure bundles are under the length limit.
 #'
-#' Using \code{future} also allows for progress bars to be specified externally with \code{\link[progressr]{handlers}}; see examples.
+#' Whether processing in serial or parallel, progress bars can be specified externally with
+#' \code{\link[progressr]{handlers}}; see examples.
 #' @examples
 #' \dontrun{
 #'
@@ -190,7 +191,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         dir.create(cache, FALSE)
       } else {
         options(receptiviti.cache_prompt = FALSE)
-        cache <- ""
+        cache <- FALSE
       }
     }
   }
@@ -326,7 +327,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   text <- data[!is.na(data$text) & data$text != "" & !duplicated(data$text), ]
   if (!nrow(text)) stop("no valid texts to process", call. = FALSE)
   if (!is.numeric(bundle_size)) bundle_size <- 1000
-  n <- ceiling(nrow(text) / min(1000, max(1, bundle_size)))
+  n_texts <- nrow(text)
+  n <- ceiling(n_texts / min(1000, max(1, bundle_size)))
   bundles <- split(text, sort(rep_len(seq_len(n), nrow(text))))
   size_fun <- if (text_as_paths) function(b) sum(file.size(b$text)) else object.size
   for (i in rev(seq_along(bundles))) {
@@ -353,12 +355,12 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       bundles <- c(bundles[-i], unname(split(bundles[[i]], paste0(i, ".", bins))))
     }
   }
-  n <- length(bundles)
-  bundle_ref <- if (n == 1) "bundle" else "bundles"
-  if (verbose) message("prepared text in ", n, " ", bundle_ref, " (", round(proc.time()[[3]] - st, 4), ")")
+  n_bundles <- length(bundles)
+  bundle_ref <- if (n_bundles == 1) "bundle" else "bundles"
+  if (verbose) message("prepared text in ", n_bundles, " ", bundle_ref, " (", round(proc.time()[[3]] - st, 4), ")")
 
   # prepare cache
-  if (is.character(cache)) {
+  if (is.character(cache) && cache != "") {
     temp <- paste0(normalizePath(cache, "/", FALSE), "/")
     cache <- TRUE
     if (clear_cache) unlink(temp, recursive = TRUE)
@@ -370,7 +372,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
 
   check_cache <- cache && !cache_overwrite
   auth <- paste0(key, ":", secret)
-  if (missing(in_memory) && (use_future || cores > 1) && n > cores) in_memory <- FALSE
+  if (missing(in_memory) && (use_future || cores > 1) && n_bundles > cores) in_memory <- FALSE
   request_scratch <- NULL
   if (!in_memory) {
     if (verbose) message("writing ", bundle_ref, " to disc (", round(proc.time()[[3]] - st, 4), ")")
@@ -547,25 +549,25 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       ))
       res$text_hash <- structure(bundle$hashes, names = bundle$id)[res$id]
     }
-    prog()
+    prog(amount = nrow(res))
     res
   }
 
   # make request(s)
-  cores <- if (is.numeric(cores)) max(1, min(length(bundles), cores)) else 1
-  call_env <- new.env(parent = globalenv())
-  prog <- progressor(along = bundles)
-  environment(doprocess) <- call_env
-  environment(request) <- call_env
-  environment(process) <- call_env
-  for (name in c(
-    "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
-    "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
-    "text_as_paths", "retry_limit", "api_args", "args_hash"
-  )) {
-    call_env[[name]] <- get(name)
-  }
+  cores <- if (is.numeric(cores)) max(1, min(n_bundles, cores)) else 1
+  prog <- progressor(n_texts)
   results <- if (use_future || cores > 1) {
+    call_env <- new.env(parent = globalenv())
+    environment(doprocess) <- call_env
+    environment(request) <- call_env
+    environment(process) <- call_env
+    for (name in c(
+      "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
+      "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
+      "text_as_paths", "retry_limit", "api_args", "args_hash"
+    )) {
+      call_env[[name]] <- get(name)
+    }
     if (verbose) {
       message(
         "processing ", bundle_ref, " using ", if (use_future) "future backend" else paste(cores, "cores"),
@@ -624,7 +626,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       cached <- dplyr::filter(db, bin %in% unique(fresh$bin), text_hash %in% fresh$text_hash)
       if (!any(dim(cached) == 0) || nrow(cached) != nrow(fresh)) {
         uncached_hashes <- if (nrow(cached)) {
-          !fresh$text_hash %in% dplyr::collect(dplyr::select(cached, text_hash))[, 1]
+          !fresh$text_hash %in% dplyr::collect(dplyr::select(cached, text_hash))[[1]]
         } else {
           rep(TRUE, nrow(fresh))
         }
