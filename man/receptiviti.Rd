@@ -137,22 +137,18 @@ The main function to access the \href{https://www.receptiviti.com}{Receptiviti} 
 }
 \section{Cache}{
 
-By default, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
+If specified, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
 cache location (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
 This ensures that the exact same texts are not re-sent to the API.
 This does, however, add some processing time and disc space usage.
 
-If a cache location is not specified, a default directory (\code{receptiviti_cache}) will be looked for
+If \code{cache} is \code{TRUE}, a default directory (\code{receptiviti_cache}) will be looked for
 in the system's temporary directory (which is usually the parent of \code{tempdir()}).
-If this does not exist, you will be asked if it should be created. You can disable this prompt with the
-\code{receptiviti.cache_prompt} option (\code{options(receptiviti.cache_prompt = FALSE)}).
+If this does not exist, you will be asked if it should be created.
 
 The \code{cache_format} arguments (or the \code{RECEPTIVITI_CACHE_FORMAT} environment variable) can be used to adjust the format of the cache.
 
 You can use the cache independently with \code{open_database(Sys.getenv("RECEPTIVITI_CACHE"))}.
-
-You can set the \code{cache} argument to \code{FALSE} to prevent the cache from being used, which might make sense if
-you don't expect to need to reprocess it.
 
 You can also set the \code{clear_cache} argument to \code{TRUE} to clear the cache before it is used again, which may be useful
 if the cache has gotten big, or you know new results will be returned. Even if a cached result exists, it will be

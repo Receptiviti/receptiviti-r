@@ -34,9 +34,9 @@ Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret)
 output <- paste0(tempdir(), "/single_text.csv")
 
 test_that("default cache works", {
-  receptiviti(text, cache = "")
+  receptiviti(text, cache = TRUE)
   expect_identical(
-    receptiviti(text, cache = "", make_request = FALSE)$summary.word_count,
+    receptiviti(text, cache = TRUE, make_request = FALSE)$summary.word_count,
     4L
   )
 })
@@ -52,7 +52,7 @@ test_that("invalid texts are caught", {
 
 test_that("make_request works", {
   expect_error(
-    receptiviti(text, cache = FALSE, request_cache = FALSE, make_request = FALSE),
+    receptiviti(text, request_cache = FALSE, make_request = FALSE),
     "make_request is FALSE, but there are texts with no cached results",
     fixed = TRUE
   )
@@ -76,11 +76,11 @@ test_that("api arguments work", {
   expect_identical(default$sallee_mode, NULL)
   expect_true(sparse$sentiment != default$sentiment)
   expect_warning(
-    receptiviti(txt, frameworks = "sallee", cache = FALSE, api_args = list(sallee_mode = "invalid")),
+    receptiviti(txt, frameworks = "sallee", api_args = list(sallee_mode = "invalid")),
     "a text was invalid"
   )
   expect_warning(
-    receptiviti(txt, api_args = list(option = "unrecognized"), cache = FALSE),
+    receptiviti(txt, api_args = list(option = "unrecognized")),
     "unrecognized api_args"
   )
 })
@@ -111,7 +111,7 @@ test_that("framework prefix removal works", {
 })
 
 test_that("as_list works", {
-  score_list <- receptiviti(matrix(text), cache = FALSE, as_list = TRUE)
+  score_list <- receptiviti(matrix(text), as_list = TRUE)
   expect_identical(score_list$personality, receptiviti(text, cache = temp_cache, frameworks = "personality"))
 })
 
@@ -125,7 +125,7 @@ test_that("NAs and empty texts are handled, and IDs align", {
   id <- paste0("id", rnorm(5))
   score <- receptiviti(
     c("", text, NA, text, NA),
-    id = id, cache = FALSE
+    id = id
   )
   expect_identical(score$id, id)
   expect_identical(score$summary.word_count, c(NA, 4L, NA, 4L, NA))
@@ -133,7 +133,7 @@ test_that("NAs and empty texts are handled, and IDs align", {
 
 test_that("repeated texts works", {
   texts <- rep(text, 2000)
-  scores <- receptiviti(texts, return_text = TRUE, cache = FALSE)
+  scores <- receptiviti(texts, return_text = TRUE)
   expect_identical(texts, scores$text)
   expect_true(all(scores[1, -(1:2)] == scores[2000, -(1:2)]))
 })
@@ -206,7 +206,7 @@ test_that("cache updating and acceptable alternates are handled", {
 
 test_that("return is consistent between sources", {
   # from request cache
-  expect_equal(receptiviti(texts, cache = FALSE), initial)
+  expect_equal(receptiviti(texts), initial)
 
   # from main cache
   expect_equal(receptiviti(texts, cache = temp_cache, request_cache = FALSE), initial)
@@ -303,7 +303,7 @@ test_that("spliting oversized bundles works", {
     secret = secret
   ), auto_unbox = TRUE), serialize = FALSE)
   expect_identical(
-    receptiviti(temp_source, cache = FALSE)$text_hash,
+    receptiviti(temp_source)$text_hash,
     unname(vapply(
       list.files(temp_source, "txt", full.names = TRUE),
       function(f) unname(digest::digest(paste0(arg_hash, texts[files_txt == f]), serialize = FALSE)),
@@ -317,11 +317,11 @@ test_that("rate limit is handled", {
     paste0(sample(words, 5, TRUE), collapse = " ")
   }, "")
   expect_error(
-    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cache = FALSE, cores = 1, retry_limit = 0),
+    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cores = 1, retry_limit = 0),
     "Rate limit exceeded"
   )
   expect_identical(
-    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cache = FALSE, cores = 1)$summary.word_count,
+    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cores = 1)$summary.word_count,
     rep(5L, 50)
   )
 })
