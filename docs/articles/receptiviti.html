@@ -325,8 +325,8 @@ the API as much as possible:</p>
 <ul>
 <li>As part of the preparation process, it excludes duplicates and
 invalid texts.</li>
-<li>It checks the primary cache to see if any texts have already been
-scored.
+<li>If enabled, it checks the primary cache to see if any texts have
+already been scored.
 <ul>
 <li>The primary cache is an Arrow database located by the
 <code>cache</code> augment.</li>
@@ -370,13 +370,14 @@ updated less frequently (as it is updated only at the end of a complete
 run).</p>
 <p>You could also parallelize your own batches, but be sure to set
 <code>cores</code> to <code>1</code> (to disable the function’s
-parallelization) and <code>cache</code> to <code>FALSE</code> (to avoid
+parallelization) and do not enable the primary cache (to avoid
 attempting to read from the cache while it is being written to by
 another instance).</p>
-<p>Disabling the cache is also more efficient, but you may want to
-ensure you are not sending duplicate texts between calls. The function
-handles duplicate texts within calls (only ever sending unique texts),
-but depends on the cache to avoid sending duplicates between calls.</p>
+<p>Not using the primary cache is also more efficient, but you may want
+to ensure you are not sending duplicate texts between calls. The
+function handles duplicate texts within calls (only ever sending unique
+texts), but depends on the cache to avoid sending duplicates between
+calls.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

@@ -74,14 +74,20 @@
 #' returns a list with a named entry containing such a \code{data.frame} for each framework.
 #'
 #' @section Cache:
-#' If specified, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
-#' cache location (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
+#' If the \code{cache} argument is specified, results for unique texts are saved in an
+#' \href{https://arrow.apache.org}{Arrow} database in the cache location
+#' (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
 #' This ensures that the exact same texts are not re-sent to the API.
 #' This does, however, add some processing time and disc space usage.
 #'
 #' If \code{cache} is \code{TRUE}, a default directory (\code{receptiviti_cache}) will be looked for
 #' in the system's temporary directory (which is usually the parent of \code{tempdir()}).
 #' If this does not exist, you will be asked if it should be created.
+#'
+#' The primary cache is checked when each bundle is processed, and existing results are loaded at
+#' that time. When processing many bundles in parallel, and many results have been cached,
+#' this can cause the system to freeze and potentially crash.
+#' To avoid this, limit the number of cores, or disable parallel processing.
 #'
 #' The \code{cache_format} arguments (or the \code{RECEPTIVITI_CACHE_FORMAT} environment variable) can be used to adjust the format of the cache.
 #'
@@ -293,7 +299,9 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     id <- paste0("t", seq_along(text))
   }
   if (!is.numeric(retry_limit)) retry_limit <- 0
-  url_parts <- regmatches(url, gregexec("/([Vv]\\d)/?([^/]+)?", url))[[1]]
+  url_parts <- unlist(strsplit(regmatches(
+    url, gregexpr("/[Vv]\\d(?:/[^/]+)?", url)
+  )[[1]], "/", fixed = TRUE))
   if (version == "") version <- if (length(url_parts) > 1) url_parts[[2]] else "v1"
   if (endpoint == "") {
     endpoint <- if (length(url_parts) > 2) {
@@ -357,7 +365,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
 
   # prepare cache
   if (is.character(cache) && cache != "") {
-    temp <- paste0(normalizePath(cache, "/", FALSE), "/")
+    temp <- normalizePath(cache, "/", FALSE)
     cache <- TRUE
     if (clear_cache) unlink(temp, recursive = TRUE)
     dir.create(temp, FALSE)
@@ -495,7 +503,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     initial <- paste0("h", substr(bundle$hashes, 1, 1))
     set <- !is.na(text) & text != "" & text != "logical(0)" & !duplicated(bundle$hashes)
     res_cached <- res_fresh <- NULL
-    if (check_cache && dir.exists(paste0(temp, "bin=h"))) {
+    if (check_cache && dir.exists(paste0(temp, "/bin=h"))) {
       db <- arrow::open_dataset(temp, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
       cached <- if (!is.null(db$schema$GetFieldByName("text_hash"))) {
         tryCatch(
@@ -585,12 +593,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   # update cache
   if (!is.null(temp)) {
     if (verbose) message("checking cache (", round(proc.time()[[3]] - st, 4), ")")
-    initialized <- dir.exists(paste0(temp, "bin=h"))
+    initialized <- dir.exists(paste0(temp, "/bin=h"))
     if (initialized) {
       db <- arrow::open_dataset(temp, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
       if (db$num_cols != (ncol(final_res) - 1)) {
         if (verbose) message("clearing existing cache since columns did not align (", round(proc.time()[[3]] - st, 4), ")")
-        if (clear_cache) unlink(temp, recursive = TRUE)
         dir.create(temp, FALSE)
         initialized <- FALSE
       }

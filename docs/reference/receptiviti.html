@@ -262,13 +262,18 @@ returns a list with a named entry containing such a <code>data.frame</code> for 
     <h2 id="cache">Cache<a class="anchor" aria-label="anchor" href="#cache"></a></h2>
     
 
-<p>If specified, results for unique texts are saved in an <a href="https://arrow.apache.org" class="external-link">Arrow</a> database in the
-cache location (<code>Sys.getenv(</code><code>"RECEPTIVITI_CACHE")</code>), and are retrieved with subsequent requests.
+<p>If the <code>cache</code> argument is specified, results for unique texts are saved in an
+<a href="https://arrow.apache.org" class="external-link">Arrow</a> database in the cache location
+(<code>Sys.getenv(</code><code>"RECEPTIVITI_CACHE")</code>), and are retrieved with subsequent requests.
 This ensures that the exact same texts are not re-sent to the API.
 This does, however, add some processing time and disc space usage.</p>
 <p>If <code>cache</code> is <code>TRUE</code>, a default directory (<code>receptiviti_cache</code>) will be looked for
 in the system's temporary directory (which is usually the parent of <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>).
 If this does not exist, you will be asked if it should be created.</p>
+<p>The primary cache is checked when each bundle is processed, and existing results are loaded at
+that time. When processing many bundles in parallel, and many results have been cached,
+this can cause the system to freeze and potentially crash.
+To avoid this, limit the number of cores, or disable parallel processing.</p>
 <p>The <code>cache_format</code> arguments (or the <code>RECEPTIVITI_CACHE_FORMAT</code> environment variable) can be used to adjust the format of the cache.</p>
 <p>You can use the cache independently with <code>open_database(Sys.getenv("RECEPTIVITI_CACHE"))</code>.</p>
 <p>You can also set the <code>clear_cache</code> argument to <code>TRUE</code> to clear the cache before it is used again, which may be useful

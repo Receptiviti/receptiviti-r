@@ -23,7 +23,7 @@ library(receptiviti)
 
 - Makes requests to the Receptiviti API, working around size and rate limitations.
 - Avoids sending invalid or identical texts, or repeating requests in the same session.
-- Builds up a local database of returned results to avoid making repeat requests in the longer-term.
+- Optionally builds up a local database of returned results to avoid making repeat requests in the longer-term.
 
 ## Examples
 

@@ -137,14 +137,20 @@ The main function to access the \href{https://www.receptiviti.com}{Receptiviti} 
 }
 \section{Cache}{
 
-If specified, results for unique texts are saved in an \href{https://arrow.apache.org}{Arrow} database in the
-cache location (\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
+If the \code{cache} argument is specified, results for unique texts are saved in an
+\href{https://arrow.apache.org}{Arrow} database in the cache location
+(\code{Sys.getenv(}\code{"RECEPTIVITI_CACHE")}), and are retrieved with subsequent requests.
 This ensures that the exact same texts are not re-sent to the API.
 This does, however, add some processing time and disc space usage.
 
 If \code{cache} is \code{TRUE}, a default directory (\code{receptiviti_cache}) will be looked for
 in the system's temporary directory (which is usually the parent of \code{tempdir()}).
 If this does not exist, you will be asked if it should be created.
+
+The primary cache is checked when each bundle is processed, and existing results are loaded at
+that time. When processing many bundles in parallel, and many results have been cached,
+this can cause the system to freeze and potentially crash.
+To avoid this, limit the number of cores, or disable parallel processing.
 
 The \code{cache_format} arguments (or the \code{RECEPTIVITI_CACHE_FORMAT} environment variable) can be used to adjust the format of the cache.
 
