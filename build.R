@@ -9,7 +9,6 @@ covr::report(covr::package_coverage(quiet = FALSE), "docs/coverage.html")
 devtools::check()
 devtools::check_win_devel()
 devtools::check_rhub(interactive = FALSE)
-rhub::check(platforms = "macos-highsierra-release-cran")
 
 # releases
 devtools::release()
