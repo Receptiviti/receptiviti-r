@@ -1,3 +1,8 @@
+# receptiviti 0.1.6
+
+### Bug Fixes
+* Fixes version and endpoint extraction from URL.
+
 # receptiviti 0.1.5
 
 ### Features

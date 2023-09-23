@@ -336,9 +336,9 @@ skip_if(tryCatch(
 
 test_that("different versions and endpoints are handled", {
   res <- receptiviti(
-    texts,
-    cache = FALSE, version = "v2", endpoint = "taxonomies", url = Sys.getenv("RECEPTIVITI_URL_TEST"),
+    "a text to score",
+    url = paste0(Sys.getenv("RECEPTIVITI_URL_TEST"), "v2/taxonomies"),
     key = Sys.getenv("RECEPTIVITI_KEY_TEST"), secret = Sys.getenv("RECEPTIVITI_SECRET_TEST")
   )
-  expect_true(nrow(res) == 50)
+  expect_true(nrow(res) == 1)
 })

@@ -310,7 +310,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       if (tolower(version) == "v1") "framework" else "taxonomies"
     }
   }
-  url <- paste0(sub("(?:/v\\d+)?/+$", "", url), "/", version, "/")
+  url <- paste0(sub("/[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
   full_url <- paste0(url, endpoint, "/bulk")
   if (!is.list(api_args)) api_args <- as.list(api_args)
   args_hash <- digest::digest(jsonlite::toJSON(c(
