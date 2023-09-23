@@ -122,7 +122,7 @@ You can enter paths to files containing separate texts in each line:
 results <- receptiviti("../files/file.txt")
 
 # multiple
-results <- receptiviti(c("../files/file1.txt", "../files/file2.txt"))
+results <- receptiviti(files = c("../files/file1.txt", "../files/file2.txt"))
 ```
 
 Or to a comma delimited file with a column containing text.
@@ -133,21 +133,21 @@ results <- receptiviti("../files/file.csv", text_column = "text")
 
 # multiple
 results <- receptiviti(
-  c("../files/file1.csv", "../files/file2.csv"),
+  files = c("../files/file1.csv", "../files/file2.csv"),
   text_column = "text"
 )
 ```
 
 Or you can point to a directory containing text files:
 ```{r}
-results <- receptiviti("../files")
+results <- receptiviti(dir = "../files")
 ```
 
 By default `.txt` files will be looked for, but you can specify
 `.csv` files with the `file_type` argument:
 ```{r}
 results <- receptiviti(
-  "../files",
+  dir = "../files",
   text_column = "text", file_type = "csv"
 )
 ```

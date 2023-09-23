@@ -176,7 +176,7 @@ line:</p>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"../files/file.txt"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># multiple</span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"../files/file1.txt"</span>, <span class="st">"../files/file2.txt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span>files <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"../files/file1.txt"</span>, <span class="st">"../files/file2.txt"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p>Or to a comma delimited file with a column containing text. Here, the
 <code>text_column</code> argument specifies which column contains
 text:</p>
@@ -186,18 +186,18 @@ text:</p>
 <span></span>
 <span><span class="co"># multiple</span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"../files/file1.csv"</span>, <span class="st">"../files/file2.csv"</span><span class="op">)</span>,</span>
+<span>  files <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"../files/file1.csv"</span>, <span class="st">"../files/file2.csv"</span><span class="op">)</span>,</span>
 <span>  text_column <span class="op">=</span> <span class="st">"text"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Or you can point to a directory containing text files:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span><span class="st">"../files"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span>dir <span class="op">=</span> <span class="st">"../files"</span><span class="op">)</span></span></code></pre></div>
 <p>By default <code>.txt</code> files will be looked for, but you can
 specify <code>.csv</code> files with the <code>file_type</code>
 argument:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti.html">receptiviti</a></span><span class="op">(</span></span>
-<span>  <span class="st">"../files"</span>,</span>
+<span>  dir <span class="op">=</span> <span class="st">"../files"</span>,</span>
 <span>  text_column <span class="op">=</span> <span class="st">"text"</span>, file_type <span class="op">=</span> <span class="st">"csv"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>

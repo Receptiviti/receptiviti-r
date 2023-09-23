@@ -1,4 +1,5 @@
 test_that("failures works", {
+  expect_null(receptiviti_status("http://localhost:0/not_served"))
   expect_error(receptiviti_status(key = ""), "specify your key")
   expect_error(receptiviti_status(key = 123, secret = ""), "specify your secret")
   expect_error(receptiviti_status("localhost", key = 123, secret = 123), "url does not appear to be valid")

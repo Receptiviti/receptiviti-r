@@ -8,6 +8,7 @@ Sys.setenv(RECEPTIVITI_KEY = 123, RECEPTIVITI_SECRET = 123)
 on.exit(Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret))
 
 test_that("invalid inputs are caught", {
+  expect_error(receptiviti(text, url = "http://localhost:0/not_served"), "URL is unreachable", fixed = TRUE)
   expect_error(receptiviti(), "enter text as the first argument", fixed = TRUE)
   expect_error(receptiviti("", key = ""), "specify your key", fixed = TRUE)
   expect_error(receptiviti("", key = 123), "401 (1411): ", fixed = TRUE)
@@ -326,13 +327,7 @@ test_that("rate limit is handled", {
   )
 })
 
-skip_if(tryCatch(
-  {
-    receptiviti_status(Sys.getenv("RECEPTIVITI_URL_TEST"))
-    FALSE
-  },
-  error = function(e) TRUE
-), "test API is not reachable")
+skip_if(is.null(receptiviti_status(Sys.getenv("RECEPTIVITI_URL_TEST"))), "test API is not reachable")
 
 test_that("different versions and endpoints are handled", {
   res <- receptiviti(

@@ -300,7 +300,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   }
   if (!is.numeric(retry_limit)) retry_limit <- 0
   url_parts <- unlist(strsplit(regmatches(
-    url, gregexpr("/[Vv]\\d(?:/[^/]+)?", url)
+    url, gregexpr("/[Vv]\\d+(?:/[^/]+)?", url)
   )[[1]], "/", fixed = TRUE))
   if (version == "") version <- if (length(url_parts) > 1) url_parts[[2]] else "v1"
   if (endpoint == "") {
@@ -310,7 +310,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       if (tolower(version) == "v1") "framework" else "taxonomies"
     }
   }
-  url <- paste0(sub("/[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
+  url <- paste0(sub("/+[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
   full_url <- paste0(url, endpoint, "/bulk")
   if (!is.list(api_args)) api_args <- as.list(api_args)
   args_hash <- digest::digest(jsonlite::toJSON(c(
@@ -322,6 +322,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   if (make_request) {
     if (verbose) message("pinging API (", round(proc.time()[[3]] - st, 4), ")")
     ping <- receptiviti_status(url, key, secret, verbose = FALSE)
+    if (is.null(ping)) stop("URL is unreachable", call. = FALSE)
     if (ping$status_code != 200) stop(ping$status_message, call. = FALSE)
   }
 
