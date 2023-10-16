@@ -1,6 +1,10 @@
 # receptiviti 0.1.6
 
+### Improvements
+* Allows encoding to be specified when reading in `txt` files.
+
 ### Bug Fixes
+* Fixes `collapse_line` when reading files from a directory.
 * Fixes version and endpoint extraction from URL.
 
 # receptiviti 0.1.5
@@ -40,3 +44,7 @@
 
 ### Bug Fixes
 * Avoids establishing the default cache in non-interactive sessions.
+
+# receptiviti 0.1.0
+
+First release.

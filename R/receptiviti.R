@@ -18,6 +18,7 @@
 #' @param files A list of file paths, as alternate entry to \code{text}.
 #' @param dir A directory to search for files in, as alternate entry to \code{text}.
 #' @param file_type File extension to search for, if \code{text} is the path to a directory containing files to be read in.
+#' @param encoding Encoding of a txt file to be read in; passed to \code{\link{readLines}}.
 #' @param return_text Logical; if \code{TRUE}, \code{text} is included as the first column of the result.
 #' @param api_args A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
 #' \code{receptiviti.api_args} option.
@@ -168,7 +169,7 @@
 #' @export
 
 receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
-                        file_type = "txt", return_text = FALSE, api_args = getOption("receptiviti.api_args", list()),
+                        file_type = "txt", encoding = "unknown", return_text = FALSE, api_args = getOption("receptiviti.api_args", list()),
                         frameworks = getOption("receptiviti.frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
                         bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
                         clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
@@ -221,10 +222,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       if (verbose) message("reading in texts from directory: ", text, " (", round(proc.time()[[3]] - st, 4), ")")
       text_as_paths <- TRUE
       text <- normalizePath(list.files(text, file_type, full.names = TRUE), "/", FALSE)
-    } else if (text_as_paths || all(file.exists(text))) {
+    }
+    if (text_as_paths || all(file.exists(text))) {
       text_as_paths <- collapse_lines
-      if (verbose) message("reading in texts from file list (", round(proc.time()[[3]] - st, 4), ")")
       if (!collapse_lines) {
+        if (verbose) message("reading in texts from file list (", round(proc.time()[[3]] - st, 4), ")")
         if (missing(id_column)) names(text) <- if (length(id) != length(text)) text else id
         if (all(grepl("\\.csv", text, TRUE))) {
           if (is.null(text_column)) stop("text appears to point to csv files, but text_column was not specified", call. = FALSE)
@@ -243,9 +245,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           }))
         } else {
           text <- unlist(lapply(text, function(f) {
-            d <- readLines(f, warn = FALSE, skipNul = TRUE)
-            if (collapse_lines) d <- paste(d, collapse = " ")
-            d
+            d <- readLines(f, warn = FALSE, encoding = encoding, skipNul = TRUE)
+            d[d != ""]
           }))
         }
         id <- names(text)
@@ -497,7 +498,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
         if (is.null(text_column)) stop("files appear to be csv, but no text_column was specified", call. = FALSE)
         text <- vapply(text, function(f) paste(arrow::read_csv_arrow(f, col_select = all_of(text_column))[[1]], collapse = " "), "")
       } else {
-        text <- vapply(text, function(f) paste(readLines(f, warn = FALSE, skipNul = TRUE), collapse = " "), "")
+        text <- vapply(text, function(f) paste(readLines(f, warn = FALSE, encoding = encoding, skipNul = TRUE), collapse = " "), "")
       }
     }
     bundle$hashes <- paste0(vapply(paste0(args_hash, text), digest::digest, "", serialize = FALSE))
@@ -569,7 +570,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     for (name in c(
       "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
       "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
-      "text_as_paths", "retry_limit", "api_args", "args_hash"
+      "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding"
     )) {
       call_env[[name]] <- get(name)
     }
