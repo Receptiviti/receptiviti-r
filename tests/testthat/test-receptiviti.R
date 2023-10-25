@@ -264,7 +264,11 @@ test_that("reading from files works", {
     fixed = TRUE
   )
   arrow::write_csv_arrow(data.frame(text = NA), paste0(temp_source, "!.csv"))
-  csv_directory <- receptiviti(temp_source, text_column = "text", file_type = "csv", cache = temp_cache)
+  csv_directory <- receptiviti(
+    temp_source,
+    text_column = "text", file_type = "csv", cache = temp_cache,
+    bundle_size = 25, collapse_lines = TRUE
+  )
   expect_true(all(initial$text_hash %in% csv_directory$text_hash))
   csv_directory <- csv_directory[!is.na(csv_directory$text_hash), ]
   rownames(csv_directory) <- csv_directory$text_hash
@@ -285,6 +289,15 @@ test_that("reading from files works", {
   alt_id <- receptiviti(file_csv, text_column = "text", id_column = "id", cache = temp_cache)
   expect_identical(alt_id, receptiviti(csv_data, text_column = "text", id = "id", cache = temp_cache))
   expect_identical(alt_id, receptiviti(csv_data$text, id = csv_data$id, cache = temp_cache))
+
+  first_res <- receptiviti(texts[1], cache = temp_cache)
+  writeBin(iconv(texts[1], "utf-8", "utf-16", toRaw = TRUE)[[1]], file_txt, useBytes = TRUE)
+  expect_error(suppressWarnings(receptiviti(file_txt, encoding = "utf-8")), "no texts were found")
+  expect_equal(receptiviti(file_txt)[, -1], first_res)
+
+  writeBin(iconv(paste0("text\n", texts[1], "\n"), "utf-8", "utf-16", toRaw = TRUE)[[1]], file_csv, useBytes = TRUE)
+  expect_error(suppressWarnings(receptiviti(file_csv, text_column = "text", encoding = "utf-8")), "failed to read in")
+  expect_equal(receptiviti(file_csv, text_column = "text")[, -1], first_res)
 })
 
 test_that("rate limit is handled", {
@@ -301,11 +314,11 @@ test_that("rate limit is handled", {
   )
 })
 
-url = Sys.getenv("RECEPTIVITI_URL_TEST")
+url <- Sys.getenv("RECEPTIVITI_URL_TEST")
 skip_if(is.null(receptiviti_status(url)), "test API is not reachable")
 
-key = Sys.getenv("RECEPTIVITI_KEY_TEST")
-secret = Sys.getenv("RECEPTIVITI_SECRET_TEST")
+key <- Sys.getenv("RECEPTIVITI_KEY_TEST")
+secret <- Sys.getenv("RECEPTIVITI_SECRET_TEST")
 
 test_that("spliting oversized bundles works", {
   unlink(list.files(temp_source, "txt", full.names = TRUE), TRUE)

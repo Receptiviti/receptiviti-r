@@ -7,7 +7,7 @@
 \usage{
 receptiviti(text, output = NULL, id = NULL, text_column = NULL,
   id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
-  encoding = "unknown", return_text = FALSE,
+  encoding = NULL, return_text = FALSE,
   api_args = getOption("receptiviti.api_args", list()),
   frameworks = getOption("receptiviti.frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
@@ -49,7 +49,8 @@ to overwrite it.}
 
 \item{file_type}{File extension to search for, if \code{text} is the path to a directory containing files to be read in.}
 
-\item{encoding}{Encoding of a txt file to be read in; passed to \code{\link{readLines}}.}
+\item{encoding}{Encoding of file(s) to be read in. If not specified, this will be detected, which can fail,
+resulting in mis-encoded characters; for best (and fasted) results, specify encoding.}
 
 \item{return_text}{Logical; if \code{TRUE}, \code{text} is included as the first column of the result.}
 

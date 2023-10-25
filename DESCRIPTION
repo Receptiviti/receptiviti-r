@@ -10,7 +10,7 @@ Authors@R: c(
 Description: Send text to the <https://www.receptiviti.com> API to be scored
     by all available frameworks.
 License: MIT + file LICENSE
-Imports: curl, jsonlite, digest, arrow, dplyr, future.apply, progressr
+Imports: curl, jsonlite, digest, arrow, dplyr, future.apply, progressr, stringi
 Suggests: 
     testthat (>= 3.0.0),
     knitr,

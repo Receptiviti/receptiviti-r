@@ -1,7 +1,7 @@
 # receptiviti 0.1.6
 
 ### Improvements
-* Allows encoding to be specified when reading in `txt` files.
+* Adds `encoding` argument; improves handling of non-UTF-8 files.
 
 ### Bug Fixes
 * Fixes `collapse_line` when reading files from a directory.
