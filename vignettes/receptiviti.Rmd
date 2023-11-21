@@ -21,9 +21,9 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 Sys.setenv(
-  RECEPTIVITI_KEY = Sys.getenv("RECEPTIVITI_KEY_LEAN"),
-  RECEPTIVITI_SECRET = Sys.getenv("RECEPTIVITI_SECRET_LEAN"),
-  RECEPTIVITI_URL = Sys.getenv("RECEPTIVITI_URL_LEAN")
+  RECEPTIVITI_KEY = Sys.getenv("RECEPTIVITI_KEY_TEST"),
+  RECEPTIVITI_SECRET = Sys.getenv("RECEPTIVITI_SECRET_TEST"),
+  RECEPTIVITI_URL = Sys.getenv("RECEPTIVITI_URL_TEST")
 )
 ```
 
