@@ -1,0 +1,10 @@
+pandoc: 3.1.1
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  receptiviti: receptiviti.html
+last_built: 2023-09-18T06:25Z
+urls:
+  reference: https://receptiviti.github.io/receptiviti-r/reference
+  article: https://receptiviti.github.io/receptiviti-r/articles
+

@@ -6,11 +6,11 @@ A Python package is also available at [Receptiviti/receptiviti-python](https://r
 ## Installation
 Download R from [r-project.org](https://www.r-project.org), then install the package from an R console:
 
-Release ([version 0.1.5](https://cran.r-project.org/package=receptiviti))
+Release ([version 0.1.6](https://cran.r-project.org/package=receptiviti))
 ```R
 install.packages("receptiviti")
 ```
-Development (version 0.1.6)
+Development (version 0.1.5)
 ```R
 # install.packages("remotes")
 remotes::install_github("Receptiviti/receptiviti-r")

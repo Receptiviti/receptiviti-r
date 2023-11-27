@@ -9,7 +9,31 @@ template:
 
 navbar:
   bg: primary
-
+  structure:
+    left: [intro, reference, versions]
+    right: [github]
+  components:
+    versions:
+      text: Versions
+      menu:
+      - text: Development
+        href: https://receptiviti.github.io/receptiviti-r/
+      - text: 0.1.6
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.6/
+      - text: 0.1.5
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.5/
+      - text: 0.1.4
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.4/
+      - text: 0.1.3
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.3/
+      - text: 0.1.2
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.2/
+      - text: 0.1.0
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.0/
+      - text: -------
+      - text: Changelog
+        href: news/index.html
+      
 home:
   links:
   - text: Test Coverage

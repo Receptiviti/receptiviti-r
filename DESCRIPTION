@@ -1,7 +1,7 @@
 Package: receptiviti
 Type: Package
 Title: Text Analysis Through the 'Receptiviti' API
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
     person("Receptiviti Inc.", role = c("fnd", "cph")),
     person("Kent", "English", role = "cre", email = "kenglish@receptiviti.com"),
