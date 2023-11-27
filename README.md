@@ -1,7 +1,7 @@
 # Receptiviti
 An R package to process text with the [Receptiviti](https://www.receptiviti.com) API.
 
-A Python package is also available at [Receptiviti/receptiviti-python](https://receptiviti.github.io/receptiviti-python).
+A Python package is also available at [Receptiviti/receptiviti-python](https://receptiviti.github.io/receptiviti-python/).
 
 ## Installation
 Download R from [r-project.org](https://www.r-project.org), then install the package from an R console:
