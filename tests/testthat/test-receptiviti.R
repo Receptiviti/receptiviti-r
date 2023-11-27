@@ -4,6 +4,8 @@ secret <- Sys.getenv("RECEPTIVITI_SECRET")
 text <- "a text to score"
 temp <- normalizePath(tempdir(), "/")
 temp_cache <- paste0(temp, "/temp_cache")
+Sys.setenv(RECEPTIVITI_KEY = 123, RECEPTIVITI_SECRET = 123)
+on.exit(Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret))
 
 test_that("invalid inputs are caught", {
   expect_error(receptiviti(text, url = "http://localhost:0/not_served"), "URL is unreachable", fixed = TRUE)
