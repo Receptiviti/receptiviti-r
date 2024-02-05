@@ -1,6 +1,7 @@
 # receptiviti 0.1.6
 
 ### Improvements
+* Suggests rather than imports optional packages (`arrow` and `dplyr` for the cache, and `future.apply` for use with future)
 * Adds `encoding` argument; improves handling of non-UTF-8 files.
 
 ### Bug Fixes
