@@ -3,7 +3,7 @@ pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   receptiviti: receptiviti.html
-last_built: 2024-02-05T22:34Z
+last_built: 2024-02-06T16:29Z
 urls:
   reference: https://receptiviti.github.io/receptiviti-r/reference
   article: https://receptiviti.github.io/receptiviti-r/articles

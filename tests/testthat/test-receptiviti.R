@@ -4,8 +4,6 @@ secret <- Sys.getenv("RECEPTIVITI_SECRET")
 text <- "a text to score"
 temp <- normalizePath(tempdir(), "/")
 temp_cache <- paste0(temp, "/temp_cache")
-Sys.setenv(RECEPTIVITI_KEY = 123, RECEPTIVITI_SECRET = 123)
-on.exit(Sys.setenv(RECEPTIVITI_KEY = key, RECEPTIVITI_SECRET = secret))
 
 test_that("invalid inputs are caught", {
   expect_error(receptiviti(text, url = "http://localhost:0/not_served"), "URL is unreachable", fixed = TRUE)
@@ -307,11 +305,11 @@ test_that("rate limit is handled", {
     paste0(sample(words, 5, TRUE), collapse = " ")
   }, "")
   expect_error(
-    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cores = 1, retry_limit = 0),
+    receptiviti(texts, bundle_size = 1, request_cache = FALSE, retry_limit = 0),
     "Rate limit exceeded"
   )
   expect_identical(
-    receptiviti(texts, bundle_size = 1, request_cache = FALSE, cores = 1)$summary.word_count,
+    receptiviti(texts, bundle_size = 1, request_cache = FALSE)$summary.word_count,
     rep(5L, 50)
   )
 })
