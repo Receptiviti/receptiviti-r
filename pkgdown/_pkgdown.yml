@@ -18,6 +18,8 @@ navbar:
       menu:
       - text: Development
         href: https://receptiviti.github.io/receptiviti-r/
+      - text: 0.1.7
+        href: https://receptiviti.github.io/receptiviti-r/v/0.1.7/
       - text: 0.1.6
         href: https://receptiviti.github.io/receptiviti-r/v/0.1.6/
       - text: 0.1.5
