@@ -19,7 +19,6 @@ Suggests:
     arrow (>= 9.0.0),
     dplyr,
     future.apply
-Additional_repositories: https://p3m.dev/cran/2024-02-02
 Config/testthat/edition: 3
 RoxygenNote: 7.3.1
 Roxygen: list(old_usage = TRUE)
