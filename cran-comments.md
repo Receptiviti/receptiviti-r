@@ -2,13 +2,11 @@
 
 - local Windows 11: 3.6, R-release, R-devel
 - local Ubuntu 22.04 (WSL): R-release, R-devel
-- local macOS 14.2.1 (arm64): R-release, R-devel
+- local macOS 14.3.1 (arm64): R-release, R-devel
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 notes
-
-* Note about Additional_repositories, which is temporarily added in case the suggested `arrow` package is removed from CRAN.
+0 errors | 0 warnings | 0 notes
 
 ## Reverse dependencies
 
