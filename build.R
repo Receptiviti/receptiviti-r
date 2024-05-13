@@ -8,7 +8,6 @@ covr::report(covr::package_coverage(quiet = FALSE), "docs/coverage.html")
 # checks
 devtools::check()
 devtools::check_win_devel()
-devtools::check_rhub(interactive = FALSE)
 
 # releases
 devtools::release()

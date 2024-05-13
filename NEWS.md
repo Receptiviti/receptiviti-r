@@ -1,3 +1,8 @@
+# receptiviti 0.1.9
+
+### Improvements
+* Validates `version` and `endpoint` arguments.
+
 # receptiviti 0.1.8
 
 ### Improvements

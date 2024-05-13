@@ -7,6 +7,8 @@ temp_cache <- paste0(temp, "/temp_cache")
 
 test_that("invalid inputs are caught", {
   expect_error(receptiviti(text, url = "http://localhost:0/not_served", key = 123, secret = 123), "URL is unreachable", fixed = TRUE)
+  expect_error(receptiviti(text, version = "1", key = 123, secret = 123), "invalid version: 1", fixed = TRUE)
+  expect_error(receptiviti(text, endpoint = "framework/v1", key = 123, secret = 123), "invalid endpoint: v1", fixed = TRUE)
   expect_error(receptiviti(), "enter text as the first argument", fixed = TRUE)
   expect_error(receptiviti("", key = ""), "specify your key", fixed = TRUE)
   expect_error(receptiviti("", key = 123, secret = 123), "401 (1411): ", fixed = TRUE)

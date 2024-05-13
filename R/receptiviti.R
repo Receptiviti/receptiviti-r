@@ -322,12 +322,20 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     url, gregexpr("/[Vv]\\d+(?:/[^/]+)?", url)
   )[[1]], "/", fixed = TRUE))
   if (version == "") version <- if (length(url_parts) > 1) url_parts[[2]] else "v1"
+  version <- tolower(version)
+  if (version == "" || !grepl("^v\\d+$", version)) {
+    stop("invalid version: ", version, call. = FALSE)
+  }
   if (endpoint == "") {
     endpoint <- if (length(url_parts) > 2) {
       url_parts[[3]]
     } else {
       if (tolower(version) == "v1") "framework" else "taxonomies"
     }
+  }
+  endpoint <- sub("^.*/", "", tolower(endpoint))
+  if (endpoint == "" || grepl("[^a-z]", endpoint)) {
+    stop("invalid endpoint: ", endpoint, call. = FALSE)
   }
   url <- paste0(sub("/+[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
   full_url <- paste0(url, endpoint, "/bulk")
