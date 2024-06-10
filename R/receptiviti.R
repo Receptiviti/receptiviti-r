@@ -224,7 +224,9 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   read_in <- FALSE
   handle_encoding <- function(file) {
     if (is.null(encoding)) {
-      unlist(stringi::stri_enc_detect(readBin(file, "raw", file.size(file)))[[1]])[[1]]
+      con <- gzfile(file, "rb")
+      on.exit(close(con))
+      unlist(stringi::stri_enc_detect(readBin(con, "raw", file.size(file)))[[1]])[[1]]
     } else {
       encoding
     }
@@ -244,9 +246,16 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           if (is.null(text_column)) stop("text appears to point to csv files, but text_column was not specified", call. = FALSE)
           read_in <- TRUE
           text <- unlist(lapply(text, function(f) {
-            d <- tryCatch(arrow::read_csv_arrow(f, read_options = arrow::CsvReadOptions$create(
-              encoding = handle_encoding(f)
-            ), col_select = c(text_column, id_column)), error = function(e) NULL)
+            d <- tryCatch(
+              {
+                enc <- handle_encoding(f)
+                con <- gzfile(f, encoding = enc)
+                arrow::read_csv_arrow(con, read_options = arrow::CsvReadOptions$create(
+                  encoding = enc
+                ), col_select = c(text_column, id_column))
+              },
+              error = function(e) NULL
+            )
             if (is.null(d)) stop("failed to read in file ", f, call. = FALSE)
             if (!is.null(id_column) && id_column %in% colnames(d)) {
               structure(d[, text_column, drop = TRUE], names = d[, id_column, drop = TRUE])
@@ -258,7 +267,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           text <- unlist(lapply(text, function(f) {
             tryCatch(
               {
-                con <- file(f, encoding = handle_encoding(f))
+                con <- gzfile(f, encoding = handle_encoding(f))
                 on.exit(close(con))
                 d <- readLines(con, warn = FALSE, skipNul = TRUE)
                 d[d != ""]

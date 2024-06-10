@@ -1,6 +1,7 @@
 # receptiviti 0.1.9
 
 ### Improvements
+* Adds support for compressed files.
 * Validates `version` and `endpoint` arguments.
 
 # receptiviti 0.1.8
