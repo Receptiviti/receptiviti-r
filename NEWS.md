@@ -4,6 +4,9 @@
 * Adds support for compressed files.
 * Validates `version` and `endpoint` arguments.
 
+### Bug Fixes
+* Avoids overwriting existing cache results within overlapping bins on update.
+
 # receptiviti 0.1.8
 
 ### Improvements

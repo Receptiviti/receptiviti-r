@@ -672,7 +672,11 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
             if (nrow(final_res) > 1) "s", " (", round(proc.time()[[3]] - st, 4), ")"
           )
         }
-        arrow::write_dataset(initial, temp, partitioning = "bin", format = cache_format)
+        arrow::write_dataset(
+          initial, temp,
+          format = cache_format, partitioning = "bin",
+          basename_template = paste0("0-{i}.", cache_format)
+        )
       }
     } else {
       fresh <- final_res[
@@ -695,7 +699,8 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           }
           arrow::write_dataset(
             fresh[uncached_hashes, !colnames(fresh) %in% exclude], temp,
-            partitioning = "bin", format = cache_format
+            format = cache_format, partitioning = "bin",
+            basename_template = paste0(as.numeric(Sys.time()), "-{i}.", cache_format)
           )
         }
       }
