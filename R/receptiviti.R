@@ -339,7 +339,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     endpoint <- if (length(url_parts) > 2) {
       url_parts[[3]]
     } else {
-      if (tolower(version) == "v1") "framework" else "taxonomies"
+      if (tolower(version) == "v1") "framework" else "analyze"
     }
   }
   endpoint <- sub("^.*/", "", tolower(endpoint))
@@ -347,8 +347,16 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     stop("invalid endpoint: ", endpoint, call. = FALSE)
   }
   url <- paste0(sub("/+[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
-  full_url <- paste0(url, endpoint, "/bulk")
+  full_url <- paste0(url, endpoint, if (version == "v1") "/bulk")
   if (!is.list(api_args)) api_args <- as.list(api_args)
+  if (version != "v1" && "context" %in% api_args && "custom_context" %in% api_args) {
+    stop("only one of `context` or `custom_context may be specified", call. = FALSE)
+  }
+  if (version == "v1" && length(api_args)) {
+    full_url <- paste0(
+      full_url, "?", paste0(names(api_args), "=", unlist(api_args), collapse = "&")
+    )
+  }
   args_hash <- digest::digest(jsonlite::toJSON(c(
     api_args,
     url = full_url, key = key, secret = secret
@@ -578,9 +586,16 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     valid_options <- names(api_args)
     if (any(set)) {
       set <- which(set)
-      res_fresh <- request(lapply(
-        set, function(i) c(api_args, list(content = text[[i]], request_id = bundle[i, "hashes"]))
-      ), initial[set], bundle[set, "id"])
+      make_bundle <- if (version == "v1") {
+        function(i) {
+          c(api_args, list(content = text[[i]], request_id = bundle[i, "hashes"]))
+        }
+      } else {
+        function(i) {
+          list(text = text[[i]], request_id = bundle[i, "hashes"])
+        }
+      }
+      res_fresh <- request(lapply(set, make_bundle), initial[set], bundle[set, "id"])
       valid_options <- valid_options[valid_options %in% colnames(res_fresh)]
       if (length(valid_options)) {
         res_fresh <- res_fresh[, !colnames(res_fresh) %in% valid_options, drop = FALSE]
@@ -620,7 +635,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
     environment(process) <- call_env
     for (name in c(
       "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
-      "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
+      "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth", "version",
       "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding", "handle_encoding"
     )) {
       call_env[[name]] <- get(name)

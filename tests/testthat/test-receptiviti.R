@@ -69,6 +69,14 @@ test_that("a single text works", {
   expect_identical(read.csv(output), score)
 })
 
+test_that("v2 works", {
+  score <- receptiviti(text, version = "v2")
+  expect_equal(
+    score[, c("social_dynamics.clout", "disc_dimensions.bold_assertive_outgoing")],
+    data.frame(social_dynamics.clout = 64.114606, disc_dimensions.bold_assertive_outgoing = 68.11719)
+  )
+})
+
 test_that("api arguments work", {
   txt <- "the whole feeling in my mind now is one of joy and thankfulness"
   sparse <- receptiviti(txt, frameworks = "sallee", api_args = list(sallee_mode = "sparse"))
@@ -347,7 +355,7 @@ test_that("spliting oversized bundles works", {
 test_that("different versions and endpoints are handled", {
   res <- receptiviti(
     "a text to score",
-    url = paste0(Sys.getenv("RECEPTIVITI_URL_TEST"), "v2/taxonomies"), key = key, secret = secret
+    url = paste0(Sys.getenv("RECEPTIVITI_URL"), "v2/analyze")
   )
   expect_true(nrow(res) == 1)
 })
