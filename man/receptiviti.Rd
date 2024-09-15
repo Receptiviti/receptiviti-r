@@ -5,7 +5,7 @@
 \alias{receptiviti_status}
 \title{Receptiviti API}
 \usage{
-receptiviti(text, output = NULL, id = NULL, text_column = NULL,
+receptiviti(text = NULL, output = NULL, id = NULL, text_column = NULL,
   id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
   encoding = NULL, return_text = FALSE,
   api_args = getOption("receptiviti.api_args", list()),

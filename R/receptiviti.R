@@ -158,7 +158,7 @@
 #'   text_column = "text", use_future = TRUE
 #' )
 #' }
-#' @importFrom curl new_handle curl_fetch_memory curl_fetch_disk
+#' @importFrom curl new_handle curl_fetch_memory curl_fetch_disk handle_setopt
 #' @importFrom jsonlite toJSON fromJSON read_json
 #' @importFrom utils object.size
 #' @importFrom digest digest
@@ -167,7 +167,7 @@
 #' @importFrom stringi stri_enc_detect
 #' @export
 
-receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
+receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
                         file_type = "txt", encoding = NULL, return_text = FALSE, api_args = getOption("receptiviti.api_args", list()),
                         frameworks = getOption("receptiviti.frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
                         bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
@@ -178,7 +178,6 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
                         secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
                         version = Sys.getenv("RECEPTIVITI_VERSION"), endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT")) {
   # check input
-  final_res <- text_hash <- bin <- NULL
   if (!is.null(output)) {
     if (!file.exists(output) && file.exists(paste0(output, ".xz"))) output <- paste0(output, ".xz")
     if (!overwrite && file.exists(output)) stop("output file already exists; use overwrite = TRUE to overwrite it", call. = FALSE)
@@ -200,473 +199,32 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
       }
     }
   }
-  if (use_future && !requireNamespace("future.apply", quietly = TRUE)) {
-    stop("install the `future.apply` package to use future", call. = FALSE)
-  }
   st <- proc.time()[[3]]
-  text_as_dir <- FALSE
-  if (missing(text)) {
-    if (!is.null(dir)) {
-      if (!dir.exists(dir)) stop("entered dir does not exist", call. = FALSE)
-      text <- dir
-      text_as_dir <- TRUE
-    } else if (!is.null(files)) {
-      text <- files
-      text_as_paths <- TRUE
-    } else {
-      stop("enter text as the first argument, or use files or dir", call. = FALSE)
-    }
-  }
-  if (text_as_paths) {
-    if (anyNA(text)) stop("NAs are not allowed in text when being treated as file paths", call. = FALSE)
-    if (!all(file.exists(text))) stop("not all of the files in text exist", call. = FALSE)
-  }
-  read_in <- FALSE
-  handle_encoding <- function(file) {
-    if (is.null(encoding)) {
-      con <- gzfile(file, "rb")
-      on.exit(close(con))
-      unlist(stringi::stri_enc_detect(readBin(con, "raw", file.size(file)))[[1]])[[1]]
-    } else {
-      encoding
-    }
-  }
-  if (text_as_dir || text_as_paths || (is.character(text) && !anyNA(text) && all(nchar(text) < 500))) {
-    if (text_as_dir || length(text) == 1 && dir.exists(text)) {
-      if (verbose) message("reading in texts from directory: ", text, " (", round(proc.time()[[3]] - st, 4), ")")
-      text_as_paths <- TRUE
-      text <- normalizePath(list.files(text, file_type, full.names = TRUE), "/", FALSE)
-    }
-    if (text_as_paths || all(file.exists(text))) {
-      text_as_paths <- collapse_lines
-      if (!collapse_lines) {
-        if (verbose) message("reading in texts from file list (", round(proc.time()[[3]] - st, 4), ")")
-        if (missing(id_column)) names(text) <- if (length(id) != length(text)) text else id
-        if (all(grepl("\\.csv", text, TRUE))) {
-          if (is.null(text_column)) stop("text appears to point to csv files, but text_column was not specified", call. = FALSE)
-          read_in <- TRUE
-          text <- unlist(lapply(text, function(f) {
-            d <- tryCatch(
-              {
-                enc <- handle_encoding(f)
-                con <- gzfile(f, encoding = enc)
-                arrow::read_csv_arrow(con, read_options = arrow::CsvReadOptions$create(
-                  encoding = enc
-                ), col_select = c(text_column, id_column))
-              },
-              error = function(e) NULL
-            )
-            if (is.null(d)) stop("failed to read in file ", f, call. = FALSE)
-            if (!is.null(id_column) && id_column %in% colnames(d)) {
-              structure(d[, text_column, drop = TRUE], names = d[, id_column, drop = TRUE])
-            } else {
-              d[, text_column, drop = TRUE]
-            }
-          }))
-        } else {
-          text <- unlist(lapply(text, function(f) {
-            tryCatch(
-              {
-                con <- gzfile(f, encoding = handle_encoding(f))
-                on.exit(close(con))
-                d <- readLines(con, warn = FALSE, skipNul = TRUE)
-                d[d != ""]
-              },
-              error = function(e) stop("failed to read in file ", f, call. = FALSE)
-            )
-          }))
-        }
-        id <- names(text)
-      }
-    } else if (length(text) == 1 && dirname(text) != "." && dir.exists(dirname(dirname(text)))) {
-      stop("text appears to be a directory, but it does not exist")
-    }
-    if (text_as_paths && missing(id)) {
-      id <- text
-      if (anyDuplicated(id)) id <- names(unlist(lapply(split(id, factor(id, unique(id))), seq_along)))
-    }
-  }
-  if (is.null(dim(text))) {
-    if (!read_in) {
-      if (!text_as_paths && !is.null(text_column)) stop("text_column is specified, but text has no columns", call. = FALSE)
-      if (!is.null(id_column)) stop("id_column is specified, but text has no columns", call. = FALSE)
-    }
-  } else {
-    if (length(id) == 1 && id %in% colnames(text)) id_column <- id
-    if (!is.null(id_column)) {
-      if (id_column %in% colnames(text)) {
-        id <- text[, id_column, drop = TRUE]
-      } else {
-        stop("id_column not found in text", call. = FALSE)
-      }
-    }
-    if (!is.null(text_column)) {
-      if (text_column %in% colnames(text)) {
-        text <- text[, text_column, drop = TRUE]
-      } else {
-        if (!text_as_paths) stop("text_column not found in text", call. = FALSE)
-      }
-    }
-    if (!is.null(dim(text))) {
-      if (ncol(text) == 1) {
-        text <- text[, 1, drop = TRUE]
-      } else {
-        stop("text has dimensions, but no text_column column", call. = FALSE)
-      }
-    }
-  }
-  if (!is.character(text)) text <- as.character(text)
-  if (!length(text)) stop("no texts were found after resolving the text argument")
-  if (length(id) && !is.character(id)) id <- as.character(id)
-  provided_id <- FALSE
-  if (length(id)) {
-    if (length(id) != length(text)) stop("id is not the same length as text", call. = FALSE)
-    if (anyDuplicated(id)) stop("id contains duplicate values", call. = FALSE)
-    provided_id <- TRUE
-  } else {
-    id <- paste0("t", seq_along(text))
-  }
-  if (!is.numeric(retry_limit)) retry_limit <- 0
-  url_parts <- unlist(strsplit(regmatches(
-    url, gregexpr("/[Vv]\\d+(?:/[^/]+)?", url)
-  )[[1]], "/", fixed = TRUE))
-  if (version == "") version <- if (length(url_parts) > 1) url_parts[[2]] else "v1"
-  version <- tolower(version)
-  if (version == "" || !grepl("^v\\d+$", version)) {
-    stop("invalid version: ", version, call. = FALSE)
-  }
-  if (endpoint == "") {
-    endpoint <- if (length(url_parts) > 2) {
-      url_parts[[3]]
-    } else {
-      if (tolower(version) == "v1") "framework" else "analyze"
-    }
-  }
-  endpoint <- sub("^.*/", "", tolower(endpoint))
-  if (endpoint == "" || grepl("[^a-z]", endpoint)) {
-    stop("invalid endpoint: ", endpoint, call. = FALSE)
-  }
-  url <- paste0(sub("/+[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
-  full_url <- paste0(url, endpoint, if (version == "v1") "/bulk")
-  if (!is.list(api_args)) api_args <- as.list(api_args)
-  if (version != "v1" && "context" %in% api_args && "custom_context" %in% api_args) {
-    stop("only one of `context` or `custom_context may be specified", call. = FALSE)
-  }
-  if (version == "v1" && length(api_args)) {
-    full_url <- paste0(
-      full_url, "?", paste0(names(api_args), "=", unlist(api_args), collapse = "&")
-    )
-  }
-  args_hash <- digest::digest(jsonlite::toJSON(c(
-    api_args,
-    url = full_url, key = key, secret = secret
-  ), auto_unbox = TRUE), serialize = FALSE)
-
-  # ping API
-  if (make_request) {
-    if (verbose) message("pinging API (", round(proc.time()[[3]] - st, 4), ")")
-    ping <- receptiviti_status(url, key, secret, verbose = FALSE)
-    if (is.null(ping)) stop("URL is unreachable", call. = FALSE)
-    if (ping$status_code != 200) stop(ping$status_message, call. = FALSE)
-  }
-
-  # prepare text
-  if (verbose) message("preparing text (", round(proc.time()[[3]] - st, 4), ")")
-  data <- data.frame(text = text, id = id, stringsAsFactors = FALSE)
-  text <- data[!is.na(data$text) & data$text != "" & !duplicated(data$text), ]
-  if (!nrow(text)) stop("no valid texts to process", call. = FALSE)
-  if (!is.numeric(bundle_size)) bundle_size <- 1000
-  n_texts <- nrow(text)
-  n <- ceiling(n_texts / min(1000, max(1, bundle_size)))
-  bundles <- split(text, sort(rep_len(seq_len(n), nrow(text))))
-  size_fun <- if (text_as_paths) function(b) sum(file.size(b$text)) else object.size
-  for (i in rev(seq_along(bundles))) {
-    size <- size_fun(bundles[[i]])
-    if (size > bundle_byte_limit) {
-      sizes <- vapply(seq_len(nrow(bundles[[i]])), function(r) as.numeric(size_fun(bundles[[i]][r, ])), 0)
-      if (any(sizes > bundle_byte_limit)) {
-        stop(
-          "one of your texts is over the individual size limit (", bundle_byte_limit / 1e6, " MB)",
-          call. = FALSE
-        )
-      }
-      bins <- rep(1, length(sizes))
-      bin_size <- 0
-      bi <- 1
-      for (ti in seq_along(bins)) {
-        bin_size <- bin_size + sizes[ti]
-        if (bin_size > bundle_byte_limit) {
-          bin_size <- sizes[ti]
-          bi <- bi + 1
-        }
-        bins[ti] <- bi
-      }
-      bundles <- c(bundles[-i], unname(split(bundles[[i]], paste0(i, ".", bins))))
-    }
-  }
-  n_bundles <- length(bundles)
-  bundle_ref <- if (n_bundles == 1) "bundle" else "bundles"
-  if (verbose) message("prepared text in ", n_bundles, " ", bundle_ref, " (", round(proc.time()[[3]] - st, 4), ")")
-
-  # prepare cache
-  if (is.character(cache) && cache != "") {
-    temp <- normalizePath(cache, "/", FALSE)
-    cache <- TRUE
-    if (clear_cache) unlink(temp, recursive = TRUE)
-    dir.create(temp, FALSE)
-  } else {
-    temp <- NULL
-    cache <- FALSE
-  }
-
-  check_cache <- cache && !cache_overwrite
-  auth <- paste0(key, ":", secret)
-  if (missing(in_memory) && (use_future || cores > 1) && n_bundles > cores) in_memory <- FALSE
-  request_scratch <- NULL
-  if (!in_memory) {
-    if (verbose) message("writing ", bundle_ref, " to disc (", round(proc.time()[[3]] - st, 4), ")")
-    request_scratch <- paste0(tempdir(), "/receptiviti_request_scratch/")
-    dir.create(request_scratch, FALSE)
-    if (clear_scratch_cache) on.exit(unlink(request_scratch, recursive = TRUE))
-    bundles <- vapply(bundles, function(b) {
-      scratch_bundle <- paste0(request_scratch, digest::digest(b), ".rds")
-      if (!file.exists(scratch_bundle)) saveRDS(b, scratch_bundle, compress = FALSE)
-      scratch_bundle
-    }, "", USE.NAMES = FALSE)
-  }
-
-  doprocess <- function(bundles, cores, future) {
-    env <- parent.frame()
-    if (future) {
-      eval(expression(future.apply::future_lapply(bundles, process)), envir = env)
-    } else {
-      cl <- parallel::makeCluster(cores)
-      parallel::clusterExport(cl, ls(envir = env), env)
-      on.exit(parallel::stopCluster(cl))
-      (if (length(bundles) > cores * 2) parallel::parLapplyLB else parallel::parLapply)(cl, bundles, process)
-    }
-  }
-
-  request <- function(body, bin, ids, attempt = retry_limit) {
-    unpack <- function(d) {
-      if (is.list(d)) as.data.frame(lapply(d, unpack), optional = TRUE) else d
-    }
-    json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
-    temp_file <- paste0(tempdir(), "/", digest::digest(json, serialize = FALSE), ".json")
-    if (!request_cache) unlink(temp_file)
-    res <- NULL
-    if (!file.exists(temp_file)) {
-      if (make_request) {
-        handler <- tryCatch(
-          curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json),
-          error = function(e) e$message
-        )
-        if (is.character(handler)) {
-          stop(if (grepl("libcurl", handler, fixed = TRUE)) {
-            "libcurl encountered an error; try setting the bundle_byte_limit argument to a smaller value"
-          } else {
-            paste("failed to create handler:", handler)
-          }, call. = FALSE)
-        }
-        res <- curl::curl_fetch_disk(full_url, temp_file, handler)
-      } else {
-        stop("make_request is FALSE, but there are texts with no cached results", call. = FALSE)
-      }
-    }
-    result <- if (file.exists(temp_file)) {
-      if (is.null(res$type) || grepl("application/json", res$type, fixed = TRUE)) {
-        tryCatch(
-          jsonlite::read_json(temp_file, simplifyVector = TRUE),
-          error = function(e) list(message = "invalid response format")
-        )
-      } else {
-        list(message = "invalid response format")
-      }
-    } else {
-      list(message = rawToChar(res$content))
-    }
-    if (!is.null(result$results) || is.null(result$message)) {
-      if (!is.null(result$results)) result <- result$results
-      if ("error" %in% names(result)) {
-        su <- !is.na(result$error$code)
-        errors <- result[su & !duplicated(result$error$code), "error"]
-        warning(
-          if (sum(su) > 1) "some texts were invalid: " else "a text was invalid: ",
-          paste(
-            do.call(paste0, data.frame("(", errors$code, ") ", errors$message, stringsAsFactors = FALSE)),
-            collapse = "; "
-          ),
-          call. = FALSE
-        )
-      }
-      result <- unpack(result[!names(result) %in% c("response_id", "language", "version", "error")])
-      if (!is.null(result) && nrow(result)) {
-        if (colnames(result)[1] == "request_id") {
-          colnames(result)[1] <- "text_hash"
-        } else {
-          result <- cbind(text_hash = vapply(body, "[[", "", "request_id"), result)
-        }
-        cbind(id = ids, bin = bin, result)
-      }
-    } else {
-      unlink(temp_file)
-      if (length(result$message) == 1 && substr(result$message, 1, 1) == "{") {
-        result <- jsonlite::fromJSON(result$message)
-      }
-      if (attempt > 0 && (length(result$code) == 1 && result$code == 1420) || (
-        length(result$message) == 1 && result$message == "invalid response format"
-      )) {
-        wait_time <- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))
-        Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)
-        request(body, bin, ids, attempt - 1)
-      } else {
-        stop(paste0(if (length(result$code)) {
-          paste0(
-            if (is.null(res$status_code)) 200 else res$status_code, " (", result$code, "): "
-          )
-        }, result$message), call. = FALSE)
-      }
-    }
-  }
-
-  process <- function(bundle) {
-    opts <- getOption("stringsAsFactors")
-    options("stringsAsFactors" = FALSE)
-    on.exit(options("stringsAsFactors" = opts))
-    if (is.character(bundle)) bundle <- readRDS(bundle)
-    text <- bundle$text
-    bin <- NULL
-    if (text_as_paths) {
-      if (all(grepl("\\.csv", text, TRUE))) {
-        if (is.null(text_column)) stop("files appear to be csv, but no text_column was specified", call. = FALSE)
-        text <- vapply(text, function(f) {
-          tryCatch(
-            paste(arrow::read_csv_arrow(f, read_options = arrow::CsvReadOptions$create(
-              encoding = handle_encoding(f)
-            ), col_select = dplyr::all_of(text_column))[[1]], collapse = " "),
-            error = function(e) stop("failed to read in file ", f, call. = FALSE)
-          )
-        }, "")
-      } else {
-        text <- vapply(text, function(f) {
-          tryCatch(
-            {
-              con <- file(f, encoding = handle_encoding(f))
-              on.exit(close(con))
-              paste(readLines(con, warn = FALSE, skipNul = TRUE), collapse = " ")
-            },
-            error = function(e) stop("failed to read in file ", f, call. = FALSE)
-          )
-        }, "")
-      }
-    }
-    bundle$hashes <- paste0(vapply(paste0(args_hash, text), digest::digest, "", serialize = FALSE))
-    initial <- paste0("h", substr(bundle$hashes, 1, 1))
-    set <- !is.na(text) & text != "" & text != "logical(0)" & !duplicated(bundle$hashes)
-    res_cached <- res_fresh <- NULL
-    if (check_cache && dir.exists(paste0(temp, "/bin=h"))) {
-      db <- arrow::open_dataset(temp, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
-      cached <- if (!is.null(db$schema$GetFieldByName("text_hash"))) {
-        tryCatch(
-          dplyr::compute(dplyr::filter(db, bin %in% unique(initial), text_hash %in% bundle$hashes)),
-          error = function(e) matrix(integer(), 0)
-        )
-      } else {
-        matrix(integer(), 0)
-      }
-      if (nrow(cached)) {
-        cached <- as.data.frame(cached$to_data_frame())
-        if (anyDuplicated(cached$text_hash)) cached <- cached[!duplicated(cached$text_hash), ]
-        rownames(cached) <- cached$text_hash
-        cached_set <- which(bundle$hashes %in% cached$text_hash)
-        set[cached_set] <- FALSE
-        res_cached <- cbind(id = bundle[cached_set, "id"], cached[bundle[cached_set, "hashes"], ])
-      }
-    }
-    valid_options <- names(api_args)
-    if (any(set)) {
-      set <- which(set)
-      make_bundle <- if (version == "v1") {
-        function(i) {
-          c(api_args, list(content = text[[i]], request_id = bundle[i, "hashes"]))
-        }
-      } else {
-        function(i) {
-          list(text = text[[i]], request_id = bundle[i, "hashes"])
-        }
-      }
-      res_fresh <- request(lapply(set, make_bundle), initial[set], bundle[set, "id"])
-      valid_options <- valid_options[valid_options %in% colnames(res_fresh)]
-      if (length(valid_options)) {
-        res_fresh <- res_fresh[, !colnames(res_fresh) %in% valid_options, drop = FALSE]
-      }
-      if (check_cache && !is.null(res_cached) && !all(colnames(res_cached) %in% colnames(res_fresh))) {
-        res_cached <- NULL
-        res_fresh <- rbind(
-          res_fresh,
-          request(lapply(
-            cached_set, function(i) c(api_args, list(content = text[[i]], request_id = bundle[i, "hashes"]))
-          ), initial[cached_set], bundle[cached_set, "id"])
-        )
-      }
-    }
-    res <- rbind(res_cached, res_fresh)
-    if (length(valid_options)) for (n in valid_options) res[[n]] <- api_args[[n]]
-    missing_ids <- !bundle$id %in% res$id
-    if (any(missing_ids)) {
-      varnames <- colnames(res)[colnames(res) != "id"]
-      res <- rbind(res, cbind(
-        id = bundle[missing_ids, "id"],
-        as.data.frame(matrix(NA, sum(missing_ids), length(varnames), dimnames = list(NULL, varnames)))
-      ))
-      res$text_hash <- structure(bundle$hashes, names = bundle$id)[res$id]
-    }
-    prog(amount = nrow(res))
-    res
-  }
-
-  # make request(s)
-  cores <- if (is.numeric(cores)) max(1, min(n_bundles, cores)) else 1
-  prog <- progressor(n_texts)
-  results <- if (use_future || cores > 1) {
-    call_env <- new.env(parent = globalenv())
-    environment(doprocess) <- call_env
-    environment(request) <- call_env
-    environment(process) <- call_env
-    for (name in c(
-      "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
-      "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth", "version",
-      "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding", "handle_encoding"
-    )) {
-      call_env[[name]] <- get(name)
-    }
-    if (verbose) {
-      message(
-        "processing ", bundle_ref, " using ", if (use_future) "future backend" else paste(cores, "cores"),
-        " (", round(proc.time()[[3]] - st, 4), ")"
-      )
-    }
-    eval(expression(doprocess(bundles, cores, use_future)), envir = call_env)
-  } else {
-    if (verbose) message("processing ", bundle_ref, " sequentially (", round(proc.time()[[3]] - st, 4), ")")
-    lapply(bundles, process)
-  }
-  if (verbose) message("done retrieving; preparing final results (", round(proc.time()[[3]] - st, 4), ")")
-  final_res <- do.call(rbind, results)
-  if (length(api_args)) {
-    su <- !names(api_args) %in% colnames(final_res)
-    if (any(su)) warning("unrecognized api_args: ", paste(names(api_args)[su], collapse = ", "), call. = FALSE)
-  }
+  res <- manage_request(
+    text,
+    id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+    file_type = file_type, encoding = encoding, api_args = api_args, bundle_size = bundle_size,
+    bundle_byte_limit = bundle_byte_limit, collapse_lines = collapse_lines,
+    retry_limit = retry_limit, clear_cache = clear_cache, clear_scratch_cache = clear_scratch_cache,
+    request_cache = request_cache, cores = cores, use_future = use_future, in_memory = in_memory,
+    verbose = verbose, make_request = make_request, text_as_paths = text_as_paths, cache = cache,
+    cache_overwrite = cache_overwrite, cache_format = cache_format, key = key, secret = secret,
+    url = url, version = version, endpoint = endpoint
+  )
+  data <- res$data
+  final_res <- res$final_res
 
   # update cache
-  if (!is.null(temp)) {
+  if (is.character(cache) && cache != "") {
+    cache <- normalizePath(cache, "/", FALSE)
+    text_hash <- bin <- NULL
     if (verbose) message("checking cache (", round(proc.time()[[3]] - st, 4), ")")
-    initialized <- dir.exists(paste0(temp, "/bin=h"))
+    initialized <- dir.exists(paste0(cache, "/bin=h"))
     if (initialized) {
-      db <- arrow::open_dataset(temp, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
+      db <- arrow::open_dataset(cache, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
       if (db$num_cols != (ncol(final_res) - 1)) {
         if (verbose) message("clearing existing cache since columns did not align (", round(proc.time()[[3]] - st, 4), ")")
-        dir.create(temp, FALSE)
+        dir.create(cache, FALSE)
         initialized <- FALSE
       }
     }
@@ -688,7 +246,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
           )
         }
         arrow::write_dataset(
-          initial, temp,
+          initial, cache,
           format = cache_format, partitioning = "bin",
           basename_template = paste0("0-{i}.", cache_format)
         )
@@ -713,7 +271,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
             )
           }
           arrow::write_dataset(
-            fresh[uncached_hashes, !colnames(fresh) %in% exclude], temp,
+            fresh[uncached_hashes, !colnames(fresh) %in% exclude], cache,
             format = cache_format, partitioning = "bin",
             basename_template = paste0(as.numeric(Sys.time()), "-{i}.", cache_format)
           )
@@ -728,7 +286,7 @@ receptiviti <- function(text, output = NULL, id = NULL, text_column = NULL, id_c
   rownames(data) <- data$id
   data$text_hash <- structure(final_res$text_hash, names = data[final_res$id, "text"])[data$text]
   final_res <- cbind(
-    data[, c(if (return_text) "text", if (provided_id) "id", "text_hash"), drop = FALSE],
+    data[, c(if (return_text) "text", if (res$provided_id) "id", "text_hash"), drop = FALSE],
     final_res[
       structure(final_res$id, names = final_res$text_hash)[data$text_hash],
       !colnames(final_res) %in% c("id", "bin", "text_hash", "custom"),

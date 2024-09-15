@@ -88,10 +88,10 @@ test_that("api arguments work", {
     receptiviti(txt, frameworks = "sallee", api_args = list(sallee_mode = "invalid")),
     "a text was invalid"
   )
-  expect_warning(
-    receptiviti(txt, api_args = list(option = "unrecognized")),
-    "unrecognized api_args"
-  )
+  expect_error(receptiviti(
+    txt,
+    version = "v2", api_args = list(custom_context = "not_created")
+  ), "not on record")
 })
 
 test_that("framework selection works", {
