@@ -122,8 +122,11 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
   } else {
     if (verbose) message("sending first-pass samples for ", name)
     first_pass <- manage_request(
-      text,
-      url = paste0(url, name, "/one"), key = key, secret = secret,
+      text, id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+      file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
+      bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
+      clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
+      in_memory = in_memory, url = paste0(url, name, "/one"), key = key, secret = secret,
       verbose = verbose, to_norming = TRUE
     )$final_res
   }
@@ -133,8 +136,11 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
   } else {
     if (verbose) message("sending second-pass samples for ", name)
     second_pass <- manage_request(
-      text,
-      url = paste0(url, name, "/two"), key = key, secret = secret,
+      text, id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+      file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
+      bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
+      clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
+      in_memory = in_memory, url = paste0(url, name, "/two"), key = key, secret = secret,
       verbose = verbose, to_norming = TRUE
     )$final_res
   }
