@@ -55,7 +55,8 @@ resulting in mis-encoded characters; for best (and fasted) results, specify enco
 \item{return_text}{Logical; if \code{TRUE}, \code{text} is included as the first column of the result.}
 
 \item{api_args}{A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
-\code{receptiviti.api_args} option.}
+\code{receptiviti.api_args} option. Custom norming contexts can be established with the \code{\link{receptiviti_norming}}
+function, then referred to here with the \code{custom_context} argument (only available in API V2).}
 
 \item{frameworks}{A vector of frameworks to include results from. Texts are always scored with all available framework --
 this just specifies what to return. Defaults to \code{all}, to return all scored frameworks. Can be set by the
@@ -216,7 +217,8 @@ file_results <- receptiviti(
 )
 
 # score many texts from a file, with a progress bar
-## set up cores and progress bar (only necessary if you want the progress bar)
+## set up cores and progress bar
+## (only necessary if you want the progress bar)
 future::plan("multisession")
 progressr::handlers(global = TRUE)
 progressr::handlers("progress")

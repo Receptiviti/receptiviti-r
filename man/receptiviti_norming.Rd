@@ -45,20 +45,42 @@ named context in a \code{list}. If \code{text}s are provided, a \code{list}:
 }
 }
 \description{
-View or Establish Custom Norming Contexts
+Custom norming contexts can be used to process later texts by specifying the
+\code{custom_context} API argument in the \code{receptiviti} function (e.g.,
+\code{receptiviti("text to score", version = "v2",
+options = list(custom_context = "norm_name"))},
+where \code{norm_name} is the name you set here).
 }
 \examples{
 \dontrun{
+
 # get status of all existing custom norming contexts
 contexts <- receptiviti_norming()
 
 # create or get the status of a single custom norming context
 status <- receptiviti_norming("new_context")
 
-# establish a new custom norming context
+# send texts to establish the context
+
+## these texts can be specified just like
+## texts in the main receptiviti function
+
+## such as directly
 full_status <- receptiviti_norming("new_context", c(
   "a text to set the norm",
   "another text part of the new context"
 ))
+
+## or from a file
+full_status <- receptiviti_norming(
+  "new_context", "./path/to/text.csv",
+  text_column = "texts"
+)
+
+## or from multiple files in a directory
+full_status <- receptiviti_norming(
+  "new_context",
+  dir = "./path/to/txt_files"
+)
 }
 }

@@ -1,5 +1,11 @@
 #' View or Establish Custom Norming Contexts
 #'
+#' Custom norming contexts can be used to process later texts by specifying the
+#' \code{custom_context} API argument in the \code{receptiviti} function (e.g.,
+#' \code{receptiviti("text to score", version = "v2",
+#' options = list(custom_context = "norm_name"))},
+#' where \code{norm_name} is the name you set here).
+#'
 #' @param name Name of a new norming context, to be established from the provided \code{text}.
 #' Not providing a name will list the previously created contexts.
 #' @param text Text to be processed and used as the custom norming context.
@@ -24,17 +30,35 @@
 #' }
 #' @examples
 #' \dontrun{
+#'
 #' # get status of all existing custom norming contexts
 #' contexts <- receptiviti_norming()
 #'
 #' # create or get the status of a single custom norming context
 #' status <- receptiviti_norming("new_context")
 #'
-#' # establish a new custom norming context
+#' # send texts to establish the context
+#'
+#' ## these texts can be specified just like
+#' ## texts in the main receptiviti function
+#'
+#' ## such as directly
 #' full_status <- receptiviti_norming("new_context", c(
 #'   "a text to set the norm",
 #'   "another text part of the new context"
 #' ))
+#'
+#' ## or from a file
+#' full_status <- receptiviti_norming(
+#'   "new_context", "./path/to/text.csv",
+#'   text_column = "texts"
+#' )
+#'
+#' ## or from multiple files in a directory
+#' full_status <- receptiviti_norming(
+#'   "new_context",
+#'   dir = "./path/to/txt_files"
+#' )
 #' }
 #' @export
 
@@ -86,6 +110,12 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
 
   if (name %in% norms$name) {
     status <- as.list(norms[norms$name == name, ])
+    if (length(options)) {
+      warning(
+        "context ", name, " already exists, so options do not apply",
+        call. = FALSE
+      )
+    }
   } else {
     # establish a new context if needed
     if (verbose) message("requesting creation of custom context ", name)
@@ -100,6 +130,13 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
       stop("failed to make norming creation request: ", message$error, call. = FALSE)
     }
     status <- jsonlite::fromJSON(rawToChar(req$content))
+    for (option in names(options)) {
+      if (!(option %in% status)) {
+        warning("option ", option, " was not set", call. = FALSE)
+      } else if (status[[option]] != options[[option]]) {
+        warning("set option ", option, " does not match the requested value", call. = FALSE)
+      }
+    }
   }
   if (verbose) {
     message(
@@ -110,7 +147,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
     return(invisible(status))
   }
   if (status$status == "completed") {
-    warning("status is `completed`, so cannot sent text")
+    warning("status is `completed`, so cannot sent text", call. = FALSE)
     return(invisible(list(
       initial_status = status,
       first_pass = NULL,
@@ -122,7 +159,8 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
   } else {
     if (verbose) message("sending first-pass samples for ", name)
     first_pass <- manage_request(
-      text, id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+      text,
+      id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
       file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
       bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
       clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
@@ -132,11 +170,15 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
   }
   second_pass <- NULL
   if (!is.null(first_pass$analyzed) && all(first_pass$analyzed == 0)) {
-    warning("no texts were successfully analyzed in the first pass, so second pass was skipped")
+    warning(
+      "no texts were successfully analyzed in the first pass, so second pass was skipped",
+      call. = FALSE
+    )
   } else {
     if (verbose) message("sending second-pass samples for ", name)
     second_pass <- manage_request(
-      text, id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+      text,
+      id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
       file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
       bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
       clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
@@ -145,7 +187,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
     )$final_res
   }
   if (!is.null(second_pass$analyzed) && all(second_pass$analyzed == 0)) {
-    warning("no texts were successfully analyzed in the second pass")
+    warning("no texts were successfully analyzed in the second pass", call. = FALSE)
   }
   invisible(list(
     initial_status = status,

@@ -1,5 +1,9 @@
 # receptiviti 0.1.9
 
+### Features
+* Adds support for V2 of the API.
+* Adds custom norming context creation functionality.
+
 ### Improvements
 * Adds support for compressed files.
 * Validates `version` and `endpoint` arguments.

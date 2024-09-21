@@ -18,16 +18,16 @@ test_that("retrieving a status works", {
 })
 
 test_that("updating works", {
-  initial_status <- receptiviti_norming("short_text2", options = list(word_count_filter = 1))
+  initial_status <- receptiviti_norming("short_text7", options = list(word_count_filter = 1))
   if (initial_status$status != "completed") {
-    updated <- receptiviti_norming("short_text2", "new text to add", cores = 1)
+    updated <- receptiviti_norming("short_text7", "new text to add")
   }
-  final_status <- receptiviti_norming("short_text2")
+  final_status <- receptiviti_norming("short_text7")
   expect_true(final_status$status == "completed")
   base_request <- receptiviti("a new text to add", version = "v2")
   self_normed_request <- receptiviti(
     "a new text to add",
-    version = "v2", api_args = list(custom_context = "short_text2")
+    version = "v2", api_args = list(custom_context = "short_text7")
   )
   expect_false(identical(base_request, self_normed_request))
 })
