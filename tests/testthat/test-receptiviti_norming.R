@@ -18,16 +18,29 @@ test_that("retrieving a status works", {
 })
 
 test_that("updating works", {
-  initial_status <- receptiviti_norming("short_text7", options = list(word_count_filter = 1))
+  norming_context <- "short_text9"
+  expect_warning(
+    {
+      initial_status <- receptiviti_norming(
+        norming_context,
+        options = list(word_count_filter = 1, invalid_option = 1)
+      )
+    },
+    "option invalid_option was not set"
+  )
   if (initial_status$status != "completed") {
-    updated <- receptiviti_norming("short_text7", "new text to add")
+    expect_warning(receptiviti(
+      "a text to score",
+      version = "v2", api_args = list(custom_context = norming_context)
+    ), "requested context has not been completed")
+    updated <- receptiviti_norming(norming_context, "new text to add")
   }
-  final_status <- receptiviti_norming("short_text7")
+  final_status <- receptiviti_norming(norming_context)
   expect_true(final_status$status == "completed")
   base_request <- receptiviti("a new text to add", version = "v2")
   self_normed_request <- receptiviti(
     "a new text to add",
-    version = "v2", api_args = list(custom_context = "short_text7")
+    version = "v2", api_args = list(custom_context = norming_context)
   )
   expect_false(identical(base_request, self_normed_request))
 })

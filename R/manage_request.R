@@ -320,7 +320,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
       if (!is.null(result$results)) result <- result$results
       if ("error" %in% names(result)) {
         if (!is.list(result$error)) {
-          warning(result$error)
+          warning("bundle ", body_hash, " failed: ", result$error)
         } else {
           su <- !is.na(result$error$code)
           errors <- result[su & !duplicated(result$error$code), "error"]

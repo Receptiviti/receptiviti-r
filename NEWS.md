@@ -9,6 +9,7 @@
 * Validates `version` and `endpoint` arguments.
 
 ### Bug Fixes
+* Avoids failure on total bundle failure.
 * Avoids overwriting existing cache results within overlapping bins on update.
 
 # receptiviti 0.1.8

@@ -131,7 +131,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
     }
     status <- jsonlite::fromJSON(rawToChar(req$content))
     for (option in names(options)) {
-      if (!(option %in% status)) {
+      if (!(option %in% names(status))) {
         warning("option ", option, " was not set", call. = FALSE)
       } else if (status[[option]] != options[[option]]) {
         warning("set option ", option, " does not match the requested value", call. = FALSE)
@@ -144,10 +144,10 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
     )
   }
   if (is.null(text)) {
-    return(invisible(status))
+    return(status)
   }
   if (status$status == "completed") {
-    warning("status is `completed`, so cannot sent text", call. = FALSE)
+    warning("status is `completed`, so cannot send text", call. = FALSE)
     return(invisible(list(
       initial_status = status,
       first_pass = NULL,
