@@ -319,16 +319,20 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     if (valid_result) {
       if (!is.null(result$results)) result <- result$results
       if ("error" %in% names(result)) {
-        su <- !is.na(result$error$code)
-        errors <- result[su & !duplicated(result$error$code), "error"]
-        warning(
-          if (sum(su) > 1) "some texts were invalid: " else "a text was invalid: ",
-          paste(
-            do.call(paste0, data.frame("(", errors$code, ") ", errors$message, stringsAsFactors = FALSE)),
-            collapse = "; "
-          ),
-          call. = FALSE
-        )
+        if (!is.list(result$error)) {
+          warning(result$error)
+        } else {
+          su <- !is.na(result$error$code)
+          errors <- result[su & !duplicated(result$error$code), "error"]
+          warning(
+            if (sum(su) > 1) "some texts were invalid: " else "a text was invalid: ",
+            paste(
+              do.call(paste0, data.frame("(", errors$code, ") ", errors$message, stringsAsFactors = FALSE)),
+              collapse = "; "
+            ),
+            call. = FALSE
+          )
+        }
       }
       if (to_norming) {
         cbind(body_hash = body_hash, as.data.frame(result))
