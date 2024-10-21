@@ -5,6 +5,7 @@
 * Adds custom norming context creation functionality.
 
 ### Improvements
+* Improves cache performance.
 * Adds support for compressed files.
 * Validates `version` and `endpoint` arguments.
 

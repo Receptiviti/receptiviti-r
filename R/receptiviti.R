@@ -185,29 +185,51 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     if (!overwrite && file.exists(output)) stop("output file already exists; use overwrite = TRUE to overwrite it", call. = FALSE)
   }
   if (isTRUE(cache)) {
-    if (!requireNamespace("arrow", quietly = TRUE)) {
-      stop("install the `arrow` package to enable the cache", call. = FALSE)
-    }
     temp <- dirname(tempdir())
     if (basename(temp) == "working_dir") temp <- dirname(dirname(temp))
     cache <- paste0(temp, "/receptiviti_cache")
     if (!dir.exists(cache)) {
       if (interactive() && !isFALSE(getOption("receptiviti.cache_prompt")) &&
         grepl("^(?:[Yy1]|$)", readline("Do you want to establish a default cache? [Y/n] "))) {
-        dir.create(cache, FALSE)
       } else {
         options(receptiviti.cache_prompt = FALSE)
-        cache <- FALSE
+        cache <- ""
       }
     }
   }
+  if (!is.character(cache)) cache <- ""
+  if (cache != "") {
+    if (!requireNamespace("arrow", quietly = TRUE)) {
+      stop("install the `arrow` package to enable the cache", call. = FALSE)
+    }
+    if (!(cache_format %in% c("parquet", "feather", "ipc", "csv"))) {
+      stop("cache format can only be `parquet`, `feather`, `ipc`, or `csv`", call. = FALSE)
+    }
+    if (clear_cache) unlink(cache, TRUE)
+    dir.create(cache, FALSE, TRUE)
+    cached_parts <- list.files(cache, cache_format, recursive = TRUE, full.names = TRUE)
+  }
   st <- proc.time()[[3]]
+  if (!is.null(api_args$custom_context)) {
+    if (verbose) {
+      message(
+        "retrieving custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
+      )
+    }
+    norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
+    if (!length(norming_status$name) || !(api_args$custom_context %in% norming_status$name)) {
+      stop("custom norming context ", api_args$custom_context, " is not on record", call. = FALSE)
+    }
+    if (norming_status$status[norming_status$name == api_args$custom_context] != "completed") {
+      stop("custom norming context ", api_args$custom_context, " is not complete", call. = FALSE)
+    }
+  }
   res <- manage_request(
     text,
     id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
     file_type = file_type, encoding = encoding, api_args = api_args, bundle_size = bundle_size,
     bundle_byte_limit = bundle_byte_limit, collapse_lines = collapse_lines,
-    retry_limit = retry_limit, clear_cache = clear_cache, clear_scratch_cache = clear_scratch_cache,
+    retry_limit = retry_limit, clear_scratch_cache = clear_scratch_cache,
     request_cache = request_cache, cores = cores, use_future = use_future, in_memory = in_memory,
     verbose = verbose, make_request = make_request, text_as_paths = text_as_paths, cache = cache,
     cache_overwrite = cache_overwrite, cache_format = cache_format, key = key, secret = secret,
@@ -216,67 +238,57 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   data <- res$data
   final_res <- res$final_res
 
-  # update cache
-  if (is.character(cache) && cache != "") {
+  # defragment cache
+  if (cache != "") {
     cache <- normalizePath(cache, "/", FALSE)
-    text_hash <- bin <- NULL
-    if (verbose) message("checking cache (", round(proc.time()[[3]] - st, 4), ")")
-    initialized <- dir.exists(paste0(cache, "/bin=h"))
-    if (initialized) {
-      db <- arrow::open_dataset(cache, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
-      if (db$num_cols != (ncol(final_res) - 1)) {
-        if (verbose) message("clearing existing cache since columns did not align (", round(proc.time()[[3]] - st, 4), ")")
-        dir.create(cache, FALSE)
-        initialized <- FALSE
-      }
-    }
-    exclude <- c("id", names(api_args))
-    if (!initialized) {
-      su <- !colnames(final_res) %in% exclude
-      if (sum(su) > 2) {
-        initial <- final_res[1, su]
-        initial$text_hash <- ""
-        initial$bin <- "h"
-        initial[, !colnames(initial) %in% c(
-          "summary.word_count", "summary.sentence_count"
-        ) & !vapply(initial, is.character, TRUE)] <- .1
-        initial <- rbind(initial, final_res[, colnames(initial)])
-        if (verbose) {
-          message(
-            "initializing cache with ", nrow(final_res), " result",
-            if (nrow(final_res) > 1) "s", " (", round(proc.time()[[3]] - st, 4), ")"
+    exclude <- c("id", "bin", names(api_args))
+    bin_dirs <- list.dirs(cache)
+    if (length(bin_dirs) > 1) {
+      if (verbose) message("defragmenting cache (", round(proc.time()[[3]] - st, 4), ")")
+      write_time <- as.numeric(Sys.time())
+      for (bin_dir in bin_dirs[-1]) {
+        files <- list.files(bin_dir, cache_format, full.names = TRUE)
+        if (length(files) > 1) {
+          previous <- files[!(files %in% cached_parts)]
+          cols <- vapply(final_res[, !(colnames(final_res) %in% exclude)], is.character, TRUE)
+          schema <- arrow::schema(lapply(structure(names(cols), names = names(cols)), function(v) {
+            if (cols[[v]]) {
+              arrow::string()
+            } else if (v %in% c("summary.word_count", "summary.sentence_count")) {
+              arrow::int32()
+            } else {
+              arrow::float64()
+            }
+          }))
+          if (length(previous)) {
+            existing_cols <- unique(c("id", "bin", names(arrow::schema(arrow::open_dataset(
+              previous[[1]], schema,
+              format = cache_format
+            )))))
+            if (
+              length(existing_cols) != ncol(final_res) || !all(existing_cols %in% colnames(final_res))
+            ) {
+              if (verbose) message("  clearing existing cache since columns did not align")
+              unlink(previous)
+            }
+          }
+          bin_content <- dplyr::compute(arrow::open_dataset(bin_dir, schema, format = cache_format))
+          su <- !duplicated(as.character(bin_content$text_hash))
+          if (!all(su)) bin_content <- bin_content[su, ]
+          writer <- switch(cache_format,
+            parquet = arrow::write_parquet,
+            feather = arrow::write_feather,
+            ipc = arrow::write_ipc_file,
+            csv = arrow::write_csv_arrow
           )
-        }
-        arrow::write_dataset(
-          initial, cache,
-          format = cache_format, partitioning = "bin",
-          basename_template = paste0("0-{i}.", cache_format)
-        )
-      }
-    } else {
-      fresh <- final_res[
-        !duplicated(final_res$text_hash), !colnames(final_res) %in% names(api_args),
-        drop = FALSE
-      ]
-      cached <- dplyr::filter(db, bin %in% unique(fresh$bin), text_hash %in% fresh$text_hash)
-      if (!any(dim(cached) == 0) || nrow(cached) != nrow(fresh)) {
-        uncached_hashes <- if (nrow(cached)) {
-          !fresh$text_hash %in% dplyr::collect(dplyr::select(cached, text_hash))[[1]]
-        } else {
-          rep(TRUE, nrow(fresh))
-        }
-        if (any(uncached_hashes)) {
-          if (verbose) {
-            message(
-              "updating cache with ", sum(uncached_hashes), " result",
-              if (sum(uncached_hashes) > 1) "s", " (", round(proc.time()[[3]] - st, 4), ")"
+          all_rows <- nrow(bin_content)
+          for (i in seq_len(ceiling(all_rows / 1e9))) {
+            writer(
+              bin_content[seq((i - 1) * 1e9 + 1, min(all_rows, i * 1e9)), ],
+              paste0(bin_dir, "/part-", write_time, "-", i, ".parquet")
             )
           }
-          arrow::write_dataset(
-            fresh[uncached_hashes, !colnames(fresh) %in% exclude], cache,
-            format = cache_format, partitioning = "bin",
-            basename_template = paste0(as.numeric(Sys.time()), "-{i}.", cache_format)
-          )
+          unlink(files)
         }
       }
     }

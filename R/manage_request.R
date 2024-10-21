@@ -1,6 +1,6 @@
 manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
                            file_type = "txt", encoding = NULL, api_args = getOption("receptiviti.api_args", list()),
-                           bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
+                           bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50,
                            clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
                            in_memory = TRUE, verbose = FALSE, make_request = TRUE,
                            text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
@@ -184,19 +184,6 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     if (ping$status_code != 200) stop(ping$status_message, call. = FALSE)
   }
 
-  # check norming context status
-  if (!is.null(api_args$custom_context)) {
-    if (verbose) {
-      message(
-        "retrieving custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
-      )
-    }
-    norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
-    if (!length(norming_status$name) || !(api_args$custom_context %in% norming_status$name)) {
-      stop("custom norming context ", api_args$custom_context, " is not on record", call. = FALSE)
-    }
-  }
-
   # prepare text
   if (verbose) message("preparing text (", round(proc.time()[[3]] - st, 4), ")")
   data <- data.frame(text = text, id = id, stringsAsFactors = FALSE)
@@ -235,18 +222,6 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
   bundle_ref <- if (n_bundles == 1) "bundle" else "bundles"
   if (verbose) message("prepared text in ", n_bundles, " ", bundle_ref, " (", round(proc.time()[[3]] - st, 4), ")")
 
-  # prepare cache
-  if (!to_norming && is.character(cache) && cache != "") {
-    temp <- normalizePath(cache, "/", FALSE)
-    cache <- TRUE
-    if (clear_cache) unlink(temp, recursive = TRUE)
-    dir.create(temp, FALSE)
-  } else {
-    temp <- NULL
-    cache <- FALSE
-  }
-
-  check_cache <- cache && !cache_overwrite
   auth <- paste0(key, ":", secret)
   if (is.null(in_memory) && (use_future || cores > 1) && n_bundles > cores) in_memory <- FALSE
   request_scratch <- NULL
@@ -274,16 +249,14 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     }
   }
 
-  request <- function(body, bin, ids, attempt = retry_limit) {
-    json <- jsonlite::toJSON(unname(body), auto_unbox = TRUE)
-    body_hash <- digest::digest(json, serialize = FALSE)
+  request <- function(body, body_hash, bin, ids, attempt = retry_limit) {
     temp_file <- paste0(tempdir(), "/", body_hash, ".json")
     if (!request_cache) unlink(temp_file)
     res <- NULL
     if (!file.exists(temp_file)) {
       if (make_request) {
         handler <- tryCatch(
-          curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = json),
+          curl::new_handle(httpauth = 1, userpwd = auth, copypostfields = body),
           error = function(e) e$message
         )
         if (is.character(handler)) {
@@ -342,10 +315,8 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
         }
         result <- unpack(result[!names(result) %in% c("response_id", "language", "version", "error")])
         if (!is.null(result) && nrow(result)) {
-          if (colnames(result)[1] == "request_id") {
-            colnames(result)[1] <- "text_hash"
-          } else {
-            result <- cbind(text_hash = vapply(body, "[[", "", "request_id"), result)
+          if (colnames(result)[[1]] == "request_id") {
+            colnames(result)[[1]] <- "text_hash"
           }
           cbind(id = ids, bin = bin, result)
         }
@@ -360,7 +331,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
       )) {
         wait_time <- as.numeric(regmatches(result$message, regexec("[0-9]+(?:\\.[0-9]+)?", result$message)))
         Sys.sleep(if (is.na(wait_time)) 1 else wait_time / 1e3)
-        request(body, bin, ids, attempt - 1)
+        request(body, body_hash, bin, ids, attempt - 1)
       } else {
         message <- if (is.null(res$status_code)) 200 else res$status_code
         if (length(result$code)) message <- paste0(message, " (", result$code, "): ", result$message)
@@ -403,17 +374,18 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     }
     bundle$hashes <- paste0(vapply(paste0(args_hash, text), digest::digest, "", serialize = FALSE))
     if (to_norming) {
-      res <- request(
-        lapply(seq_along(text), function(i) list(text = text[[i]], request_id = bundle$hashes[[i]])),
-        initial, bundle$id
-      )
+      body <- jsonlite::toJSON(lapply(
+        seq_along(text), function(i) list(text = text[[i]], request_id = bundle$hashes[[i]])
+      ), auto_unbox = TRUE)
+      res <- request(body, digest::digest(body, serialize = FALSE), initial, bundle$id)
       prog(amount = nrow(bundle))
     } else {
       initial <- paste0("h", substr(bundle$hashes, 1, 1))
       set <- !is.na(text) & text != "" & text != "logical(0)" & !duplicated(bundle$hashes)
       res_cached <- res_fresh <- NULL
-      if (check_cache && dir.exists(paste0(temp, "/bin=h"))) {
-        db <- arrow::open_dataset(temp, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
+      check_cache <- !cache_overwrite && (cache != "" && length(list.dirs(cache)))
+      if (check_cache) {
+        db <- arrow::open_dataset(cache, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
         cached <- if (!is.null(db$schema$GetFieldByName("text_hash"))) {
           text_hash <- NULL
           tryCatch(
@@ -444,19 +416,36 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
             list(text = text[[i]], request_id = bundle$hashes[[i]])
           }
         }
-        res_fresh <- request(lapply(set, make_bundle), initial[set], bundle$id[set])
+        body <- jsonlite::toJSON(unname(lapply(set, make_bundle)), auto_unbox = TRUE)
+        body_hash <- digest::digest(body, serialize = FALSE)
+        res_fresh <- request(body, body_hash, initial[set], bundle$id[set])
         valid_options <- valid_options[valid_options %in% colnames(res_fresh)]
         if (length(valid_options)) {
           res_fresh <- res_fresh[, !colnames(res_fresh) %in% valid_options, drop = FALSE]
         }
         if (check_cache && !is.null(res_cached) && !all(colnames(res_cached) %in% colnames(res_fresh))) {
           res_cached <- NULL
-          res_fresh <- rbind(
-            res_fresh,
-            request(lapply(
-              cached_set, function(i) c(api_args, list(content = text[[i]], request_id = bundle$hashes[[i]]))
-            ), initial[cached_set], bundle$id[cached_set])
+          body <- lapply(cached_set, make_bundle)
+          res_fresh <- rbind(res_fresh, request(
+            body, digest::digest(body, serialize = FALSE),
+            initial[cached_set], bundle$id[cached_set]
+          ))
+        }
+        if (cache != "" && nrow(res_fresh)) {
+          writer <- switch(cache_format,
+            parquet = arrow::write_parquet,
+            feather = arrow::write_feather,
+            ipc = arrow::write_ipc_file,
+            csv = arrow::write_csv_arrow
           )
+          for (part_bin in unique(res_fresh$bin)) {
+            part <- res_fresh[res_fresh$bin == part_bin, ]
+            part$id <- NULL
+            part$bin <- NULL
+            bin_dir <- paste0(cache, "/bin=", part_bin, "/")
+            dir.create(bin_dir, FALSE, TRUE)
+            writer(part, paste0(bin_dir, body_hash, "-0.", cache_format))
+          }
         }
       }
       res <- rbind(res_cached, res_fresh)
@@ -484,9 +473,10 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     environment(request) <- call_env
     environment(process) <- call_env
     for (name in c(
-      "doprocess", "request", "process", "text_column", "prog", "make_request", "check_cache", "full_url",
-      "temp", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth", "version", "to_norming",
-      "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding", "handle_encoding"
+      "doprocess", "request", "process", "text_column", "prog", "make_request", "full_url", "cache",
+      "cache_overwrite", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
+      "version", "to_norming", "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding",
+      "handle_encoding"
     )) {
       call_env[[name]] <- get(name)
     }

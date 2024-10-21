@@ -184,8 +184,7 @@ test_that("verbose works", {
       "prepared text in 1 bundle",
       "processing bundle sequentially",
       "done retrieving; preparing final results",
-      "checking cache",
-      "initializing cache with 50 results",
+      "defragmenting cache",
       "preparing output",
       paste("writing results to file:", temp_output),
       "done"
@@ -205,8 +204,7 @@ test_that("cache updating and acceptable alternates are handled", {
       "prepared text in 1 bundle",
       "processing bundle sequentially",
       "done retrieving; preparing final results",
-      "checking cache",
-      "updating cache with 1 result",
+      "defragmenting cache",
       "preparing output",
       "done"
     )
@@ -353,9 +351,6 @@ test_that("spliting oversized bundles works", {
 })
 
 test_that("different versions and endpoints are handled", {
-  res <- receptiviti(
-    "a text to score",
-    url = paste0(Sys.getenv("RECEPTIVITI_URL"), "v2/analyze")
-  )
+  res <- receptiviti("a text to score", url = paste0(url, "v2/analyze"), key = key, secret = secret)
   expect_true(nrow(res) == 1)
 })

@@ -12,3 +12,4 @@
 ^coverage$
 _snaps$
 ^CRAN-SUBMISSION$
+\.lintr
