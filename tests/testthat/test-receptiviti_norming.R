@@ -18,7 +18,8 @@ test_that("retrieving a status works", {
 })
 
 test_that("updating works", {
-  norming_context <- "short_text13"
+  norming_context <- "short_text"
+  receptiviti_norming(norming_context, delete = TRUE)
   expect_warning(
     {
       initial_status <- receptiviti_norming(

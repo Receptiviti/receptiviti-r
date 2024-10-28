@@ -5,8 +5,8 @@
 \title{View or Establish Custom Norming Contexts}
 \usage{
 receptiviti_norming(name = NULL, text = NULL, options = list(),
-  id = NULL, text_column = NULL, id_column = NULL, files = NULL,
-  dir = NULL, file_type = "txt", collapse_lines = FALSE,
+  delete = FALSE, id = NULL, text_column = NULL, id_column = NULL,
+  files = NULL, dir = NULL, file_type = "txt", collapse_lines = FALSE,
   encoding = NULL, bundle_size = 1000, bundle_byte_limit = 7500000,
   retry_limit = 50, clear_scratch_cache = TRUE, cores = detectCores() -
   1, use_future = FALSE, in_memory = TRUE,
@@ -22,6 +22,8 @@ Not providing text will return the status of the named norming context.}
 
 \item{options}{Options to set for the norming context (e.g.,
 \code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).}
+
+\item{delete}{If \code{TRUE}, will request to remove the \code{name} context.}
 
 \item{id, text_column, id_column, files, dir, file_type, collapse_lines, encoding}{Additional
 arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.}

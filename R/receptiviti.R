@@ -202,8 +202,8 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     if (!requireNamespace("arrow", quietly = TRUE)) {
       stop("install the `arrow` package to enable the cache", call. = FALSE)
     }
-    if (!(cache_format %in% c("parquet", "feather", "ipc", "csv"))) {
-      stop("cache format can only be `parquet`, `feather`, `ipc`, or `csv`", call. = FALSE)
+    if (!(cache_format %in% c("parquet", "feather"))) {
+      stop("cache format can only be `parquet` or `feather`", call. = FALSE)
     }
     if (clear_cache) unlink(cache, TRUE)
     dir.create(cache, FALSE, TRUE)
@@ -285,7 +285,7 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
           for (i in seq_len(ceiling(all_rows / 1e9))) {
             writer(
               bin_content[seq((i - 1) * 1e9 + 1, min(all_rows, i * 1e9)), ],
-              paste0(bin_dir, "/part-", write_time, "-", i, ".parquet")
+              paste0(bin_dir, "/part-", write_time, "-", i, ".", cache_format)
             )
           }
           unlink(files)

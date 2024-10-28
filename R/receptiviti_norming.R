@@ -12,6 +12,7 @@
 #' Not providing text will return the status of the named norming context.
 #' @param options Options to set for the norming context (e.g.,
 #' \code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).
+#' @param delete If \code{TRUE}, will request to remove the \code{name} context.
 #' @param id,text_column,id_column,files,dir,file_type,collapse_lines,encoding Additional
 #' arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.
 #' @param bundle_size,bundle_byte_limit,retry_limit,clear_scratch_cache,cores,use_future,in_memory
@@ -62,7 +63,7 @@
 #' }
 #' @export
 
-receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id = NULL, text_column = NULL,
+receptiviti_norming <- function(name = NULL, text = NULL, options = list(), delete = FALSE, id = NULL, text_column = NULL,
                                 id_column = NULL, files = NULL, dir = NULL,
                                 file_type = "txt", collapse_lines = FALSE, encoding = NULL,
                                 bundle_size = 1000, bundle_byte_limit = 75e5, retry_limit = 50,
@@ -109,6 +110,16 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
   }
 
   if (name %in% norms$name) {
+    if (delete) {
+      curl::handle_setopt(handler, customrequest = "DELETE")
+      req <- curl::curl_fetch_memory(paste0(url, name), handler)
+      if (req$status_code != 200) {
+        message <- list(error = rawToChar(req$content))
+        if (substr(message$error, 1, 1) == "{") message$error <- jsonlite::fromJSON(message$error)
+        stop("failed to delete custom norming context: ", message$error, call. = FALSE)
+      }
+      return(invisible(NULL))
+    }
     status <- as.list(norms[norms$name == name, ])
     if (length(options)) {
       warning(
@@ -137,6 +148,10 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), id =
         warning("set option ", option, " does not match the requested value", call. = FALSE)
       }
     }
+  }
+  if (delete) {
+    message("context ", name, " does not exist")
+    return(invisible(NULL))
   }
   if (verbose) {
     message(

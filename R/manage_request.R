@@ -425,7 +425,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
         }
         if (check_cache && !is.null(res_cached) && !all(colnames(res_cached) %in% colnames(res_fresh))) {
           res_cached <- NULL
-          body <- lapply(cached_set, make_bundle)
+          body <- jsonlite::toJSON(lapply(cached_set, make_bundle), auto_unbox = TRUE)
           res_fresh <- rbind(res_fresh, request(
             body, digest::digest(body, serialize = FALSE),
             initial[cached_set], bundle$id[cached_set]
