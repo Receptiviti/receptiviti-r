@@ -111,6 +111,11 @@ test_that("framework selection works", {
     "frameworks did not match any columns -- returning all",
     fixed = TRUE
   )
+  expect_error(
+    receptiviti(text, frameworks = "x", version = "v2"),
+    "not available to your account: x",
+    fixed = TRUE
+  )
 })
 
 test_that("framework prefix removal works", {
@@ -330,18 +335,22 @@ secret <- Sys.getenv("RECEPTIVITI_SECRET_TEST")
 
 test_that("spliting oversized bundles works", {
   unlink(list.files(temp_source, "txt", full.names = TRUE), TRUE)
-  texts <- vapply(seq_len(50), function(d) {
-    paste0(sample(words, 6e4, TRUE), collapse = " ")
-  }, "")
   for (i in seq_along(texts)) {
     writeLines(texts[i], files_txt[i])
   }
-  expect_true(sum(file.size(files_txt)) > 1e7)
   arg_hash <- digest::digest(jsonlite::toJSON(list(
     url = paste0(url, "v1/framework/bulk"), key = key, secret = secret
   ), auto_unbox = TRUE), serialize = FALSE)
+  log <- capture.output(
+    res <- receptiviti(
+      temp_source,
+      url = url, key = key, secret = secret, bundle_byte_limit = 1e4, verbose = TRUE
+    ),
+    type = "message"
+  )
+  expect_true(any(grepl("bundles", log, fixed = TRUE)))
   expect_identical(
-    receptiviti(temp_source, url = url, key = key, secret = secret)$text_hash,
+    res$text_hash,
     unname(vapply(
       list.files(temp_source, "txt", full.names = TRUE),
       function(f) unname(digest::digest(paste0(arg_hash, texts[files_txt == f]), serialize = FALSE)),

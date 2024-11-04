@@ -1,8 +1,9 @@
 # receptiviti 0.1.9
 
 ### Features
-* Adds support for V2 of the API.
+* Adds framework checking and listing functionality.
 * Adds custom norming context creation functionality.
+* Adds support for V2 of the API.
 
 ### Improvements
 * Improves cache performance.

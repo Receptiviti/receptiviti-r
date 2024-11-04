@@ -211,17 +211,33 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   }
   st <- proc.time()[[3]]
   if (!is.null(api_args$custom_context)) {
+    norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
     if (verbose) {
       message(
-        "retrieving custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
+        "retrieved custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
       )
     }
-    norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
     if (!length(norming_status$name) || !(api_args$custom_context %in% norming_status$name)) {
       stop("custom norming context ", api_args$custom_context, " is not on record", call. = FALSE)
     }
     if (norming_status$status[norming_status$name == api_args$custom_context] != "completed") {
       stop("custom norming context ", api_args$custom_context, " is not complete", call. = FALSE)
+    }
+  }
+  if (length(frameworks) && !("all" %in% frameworks) && grepl("2", version, fixed = TRUE)) {
+    api_args$frameworks <- paste0(frameworks[frameworks != "summary"], collapse = ",")
+  }
+  if (!is.null(api_args$frameworks)) {
+    available_frameworks <- c("summary", receptiviti_frameworks(url, key, secret))
+    if (verbose) message("retrived frameworks list (", round(proc.time()[[3]] - st, 4), ")")
+    arg_frameworks <- unlist(strsplit(api_args$frameworks, ",", fixed = TRUE))
+    su <- !(arg_frameworks %in% available_frameworks)
+    if (any(su)) {
+      stop(
+        "requested framework(s) are not available to your account: ",
+        paste(arg_frameworks[su], collapse = ", "),
+        call. = FALSE
+      )
     }
   }
   res <- manage_request(

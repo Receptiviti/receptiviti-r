@@ -70,24 +70,18 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
                                 clear_scratch_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
                                 url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
                                 secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE) {
-  if (key == "") stop("specify your key, or set it to the RECEPTIVITI_KEY environment variable", call. = FALSE)
-  if (secret == "") stop("specify your secret, or set it to the RECEPTIVITI_SECRET environment variable", call. = FALSE)
+  params <- handle_request_params(url, key, secret)
+  baseurl <- paste0(params$url, "/v2/norming/")
   if (!is.null(name) && grepl("[^a-z0-9_.-]", name)) {
     stop(
       "`name` can only include lowercase letters, numbers, hyphens, underscores, or periods",
       call. = FALSE
     )
   }
-  handler <- curl::new_handle(httpauth = 1, userpwd = paste0(key, ":", secret))
-  url <- paste0(
-    if (!grepl("http", tolower(url), fixed = TRUE)) "https://",
-    sub("/+[Vv]\\d+(?:/.*)?$|/+$", "", url), "/v2/norming/"
-  )
-  if (!grepl("^https?://[^.]+[.:][^.]", url, TRUE)) stop("url does not appear to be valid: ", url)
 
   # list current contexts
   if (verbose) message("requesting list of existing custom norming contexts")
-  req <- curl::curl_fetch_memory(url, handler)
+  req <- curl::curl_fetch_memory(baseurl, params$handler)
   if (req$status_code != 200) {
     stop(
       "failed to make norming list request: ", req$status_code,
@@ -97,9 +91,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   norms <- jsonlite::fromJSON(rawToChar(req$content))
   if (length(norms)) {
     if (verbose && is.null(name)) {
-      message(
-        "custom norming context(s) found: ", paste(norms$name, collapse = ", ")
-      )
+      message("custom norming context(s) found: ", paste(norms$name, collapse = ", "))
     }
   } else {
     if (verbose && is.null(name)) message("no custom norming contexts found")
@@ -111,8 +103,8 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
 
   if (name %in% norms$name) {
     if (delete) {
-      curl::handle_setopt(handler, customrequest = "DELETE")
-      req <- curl::curl_fetch_memory(paste0(url, name), handler)
+      curl::handle_setopt(params$handler, customrequest = "DELETE")
+      req <- curl::curl_fetch_memory(paste0(baseurl, name), params$handler)
       if (req$status_code != 200) {
         message <- list(error = rawToChar(req$content))
         if (substr(message$error, 1, 1) == "{") message$error <- jsonlite::fromJSON(message$error)
@@ -131,10 +123,10 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     # establish a new context if needed
     if (verbose) message("requesting creation of custom context ", name)
     curl::handle_setopt(
-      handler,
+      params$handler,
       copypostfields = jsonlite::toJSON(c(name = name, options), auto_unbox = TRUE)
     )
-    req <- curl::curl_fetch_memory(url, handler)
+    req <- curl::curl_fetch_memory(baseurl, params$handler)
     if (req$status_code != 200) {
       message <- list(error = rawToChar(req$content))
       if (substr(message$error, 1, 1) == "{") message$error <- jsonlite::fromJSON(message$error)
@@ -179,7 +171,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
       bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
       clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
-      in_memory = in_memory, url = paste0(url, name, "/one"), key = key, secret = secret,
+      in_memory = in_memory, url = paste0(baseurl, name, "/one"), key = key, secret = secret,
       verbose = verbose, to_norming = TRUE
     )$final_res
   }
@@ -197,7 +189,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
       bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
       clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
-      in_memory = in_memory, url = paste0(url, name, "/two"), key = key, secret = secret,
+      in_memory = in_memory, url = paste0(baseurl, name, "/two"), key = key, secret = secret,
       verbose = verbose, to_norming = TRUE
     )$final_res
   }

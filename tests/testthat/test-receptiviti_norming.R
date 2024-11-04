@@ -1,6 +1,4 @@
 test_that("invalid inputs are caught", {
-  expect_error(receptiviti_norming(key = ""), "specify your key")
-  expect_error(receptiviti_norming(key = "123", secret = ""), "specify your secret")
   expect_error(receptiviti_norming(
     name = "INVALID", key = "123", secret = "123"
   ), "`name` can only include")
