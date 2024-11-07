@@ -5,7 +5,7 @@
 #' @returns A character vector containing the names of frameworks available to your account.
 #' @examples
 #' \dontrun{
-#' 
+#'
 #' # see which frameworks are available to your account
 #' frameworks <- receptiviti_frameworks()
 #' }

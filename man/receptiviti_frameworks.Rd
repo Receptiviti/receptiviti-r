@@ -20,6 +20,7 @@ Retrieve the list of frameworks available to your account.
 \examples{
 \dontrun{
 
-receptiviti_frameworks()
+# see which frameworks are available to your account
+frameworks <- receptiviti_frameworks()
 }
 }

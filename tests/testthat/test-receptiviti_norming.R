@@ -30,7 +30,7 @@ test_that("updating works", {
   if (initial_status$status != "completed") {
     expect_error(receptiviti(
       "a text to score",
-      version = "v2", api_args = list(custom_context = norming_context)
+      version = "v2", custom_context = norming_context
     ), "is not complete")
     updated <- receptiviti_norming(norming_context, "new text to add")
   }
@@ -39,7 +39,7 @@ test_that("updating works", {
   base_request <- receptiviti("a new text to add", version = "v2")
   self_normed_request <- receptiviti(
     "a new text to add",
-    version = "v2", api_args = list(custom_context = norming_context)
+    version = "v2", custom_context = norming_context
   )
   expect_false(identical(base_request, self_normed_request))
 })

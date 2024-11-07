@@ -73,8 +73,13 @@ test_that("v2 works", {
   score <- receptiviti(text, version = "v2")
   expect_equal(
     score[, c("social_dynamics.clout", "disc_dimensions.bold_assertive_outgoing")],
-    data.frame(social_dynamics.clout = 64.114606, disc_dimensions.bold_assertive_outgoing = 68.11719)
+    data.frame(social_dynamics.clout = 33.8554987, disc_dimensions.bold_assertive_outgoing = 63.9442740)
   )
+})
+
+test_that("context works", {
+  score <- receptiviti(text, version = "v2", context = "spoken")
+  expect_true(score$drives.power > .05)
 })
 
 test_that("api arguments work", {
@@ -90,7 +95,7 @@ test_that("api arguments work", {
   )
   expect_error(receptiviti(
     txt,
-    version = "v2", api_args = list(custom_context = "not_created")
+    version = "v2", custom_context = "not_created"
   ), "not on record")
 })
 

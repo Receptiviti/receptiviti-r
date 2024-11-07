@@ -21,6 +21,9 @@
 #' @param encoding Encoding of file(s) to be read in. If not specified, this will be detected, which can fail,
 #' resulting in mis-encoded characters; for best (and fasted) results, specify encoding.
 #' @param return_text Logical; if \code{TRUE}, \code{text} is included as the first column of the result.
+#' @param context Name of the analysis context.
+#' @param custom_context Name of a custom context (as listed by \code{\link{receptiviti_norming}}),
+#' or \code{TRUE} if \code{context} is the name of a custom context.
 #' @param api_args A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
 #' \code{receptiviti.api_args} option. Custom norming contexts can be established with the \code{\link{receptiviti_norming}}
 #' function, then referred to here with the \code{custom_context} argument (only available in API V2).
@@ -170,7 +173,8 @@
 #' @export
 
 receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
-                        file_type = "txt", encoding = NULL, return_text = FALSE, api_args = getOption("receptiviti.api_args", list()),
+                        file_type = "txt", encoding = NULL, return_text = FALSE, context = "written", custom_context = FALSE,
+                        api_args = getOption("receptiviti.api_args", list()),
                         frameworks = getOption("receptiviti.frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
                         bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
                         clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
@@ -210,18 +214,22 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     cached_parts <- list.files(cache, cache_format, recursive = TRUE, full.names = TRUE)
   }
   st <- proc.time()[[3]]
-  if (!is.null(api_args$custom_context)) {
+  if (is.character(custom_context)) {
+    context <- custom_context
+    custom_context <- TRUE
+  }
+  if (custom_context) {
     norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
     if (verbose) {
       message(
         "retrieved custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
       )
     }
-    if (!length(norming_status$name) || !(api_args$custom_context %in% norming_status$name)) {
-      stop("custom norming context ", api_args$custom_context, " is not on record", call. = FALSE)
+    if (!length(norming_status$name) || !(context %in% norming_status$name)) {
+      stop("custom norming context ", context, " is not on record", call. = FALSE)
     }
-    if (norming_status$status[norming_status$name == api_args$custom_context] != "completed") {
-      stop("custom norming context ", api_args$custom_context, " is not complete", call. = FALSE)
+    if (norming_status$status[norming_status$name == context] != "completed") {
+      stop("custom norming context ", context, " is not complete", call. = FALSE)
     }
   }
   if (length(frameworks) && !("all" %in% frameworks) && grepl("2", version, fixed = TRUE)) {
@@ -243,7 +251,9 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   res <- manage_request(
     text,
     id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
-    file_type = file_type, encoding = encoding, api_args = api_args, bundle_size = bundle_size,
+    file_type = file_type, encoding = encoding,
+    context = if (custom_context) paste0("custom/", context) else context,
+    api_args = api_args, bundle_size = bundle_size,
     bundle_byte_limit = bundle_byte_limit, collapse_lines = collapse_lines,
     retry_limit = retry_limit, clear_scratch_cache = clear_scratch_cache,
     request_cache = request_cache, cores = cores, use_future = use_future, in_memory = in_memory,

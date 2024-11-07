@@ -1,5 +1,6 @@
 manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
-                           file_type = "txt", encoding = NULL, api_args = getOption("receptiviti.api_args", list()),
+                           file_type = "txt", encoding = NULL, context = "written",
+                           api_args = getOption("receptiviti.api_args", list()),
                            bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50,
                            clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
                            in_memory = TRUE, verbose = FALSE, make_request = TRUE,
@@ -160,7 +161,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
       stop("invalid endpoint: ", endpoint, call. = FALSE)
     }
     url <- paste0(sub("/+[Vv]\\d+(/.*)?$|/+$", "", url), "/", version, "/")
-    full_url <- paste0(url, endpoint, if (version == "v1") "/bulk")
+    full_url <- paste0(url, endpoint, if (version == "v1") "/bulk" else paste0("/", context))
     if (!is.list(api_args)) api_args <- as.list(api_args)
     if (version != "v1" && "context" %in% api_args && "custom_context" %in% api_args) {
       stop("only one of `context` or `custom_context may be specified", call. = FALSE)

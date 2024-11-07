@@ -7,9 +7,9 @@
 \usage{
 receptiviti(text = NULL, output = NULL, id = NULL, text_column = NULL,
   id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
-  encoding = NULL, return_text = FALSE,
-  api_args = getOption("receptiviti.api_args", list()),
-  frameworks = getOption("receptiviti.frameworks", "all"),
+  encoding = NULL, return_text = FALSE, context = "written",
+  custom_context = FALSE, api_args = getOption("receptiviti.api_args",
+  list()), frameworks = getOption("receptiviti.frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
   bundle_byte_limit = 7500000, collapse_lines = FALSE, retry_limit = 50,
   clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
@@ -53,6 +53,11 @@ to overwrite it.}
 resulting in mis-encoded characters; for best (and fasted) results, specify encoding.}
 
 \item{return_text}{Logical; if \code{TRUE}, \code{text} is included as the first column of the result.}
+
+\item{context}{Name of the analysis context.}
+
+\item{custom_context}{Name of a custom context (as listed by \code{\link{receptiviti_norming}}),
+or \code{TRUE} if \code{context} is the name of a custom context.}
 
 \item{api_args}{A list of additional arguments to pass to the API (e.g., \code{list(sallee_mode = "sparse")}). Defaults to the
 \code{receptiviti.api_args} option. Custom norming contexts can be established with the \code{\link{receptiviti_norming}}
