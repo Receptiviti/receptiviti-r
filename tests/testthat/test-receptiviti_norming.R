@@ -8,15 +8,18 @@ skip_if(Sys.getenv("RECEPTIVITI_KEY") == "", "no API key")
 
 test_that("listing works", {
   custom_norms <- receptiviti_norming()
-  expect_true("test" %in% custom_norms$name)
+  expect_true("custom/short_text_r01" %in% custom_norms$name)
+
+  custom_norms <- receptiviti_norming(name_only = TRUE)
+  expect_true("custom/short_text_r01" %in% custom_norms)
 })
 
 test_that("retrieving a status works", {
-  expect_identical(receptiviti_norming("test")$name, "test")
+  expect_identical(receptiviti_norming("short_text_r01")$name, "custom/short_text_r01")
 })
 
 test_that("updating works", {
-  norming_context <- "short_text"
+  norming_context <- "short_text_r12"
   receptiviti_norming(norming_context, delete = TRUE)
   expect_warning(
     {
@@ -27,13 +30,11 @@ test_that("updating works", {
     },
     "option invalid_option was not set"
   )
-  if (initial_status$status != "completed") {
-    expect_error(receptiviti(
-      "a text to score",
-      version = "v2", custom_context = norming_context
-    ), "is not complete")
-    updated <- receptiviti_norming(norming_context, "new text to add")
-  }
+  expect_error(receptiviti(
+    "a text to score",
+    version = "v2", custom_context = norming_context
+  ), "is not complete")
+  updated <- receptiviti_norming(norming_context, "new text to add")
   final_status <- receptiviti_norming(norming_context)
   expect_true(final_status$status == "completed")
   base_request <- receptiviti("a new text to add", version = "v2")

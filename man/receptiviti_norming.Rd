@@ -5,11 +5,12 @@
 \title{View or Establish Custom Norming Contexts}
 \usage{
 receptiviti_norming(name = NULL, text = NULL, options = list(),
-  delete = FALSE, id = NULL, text_column = NULL, id_column = NULL,
-  files = NULL, dir = NULL, file_type = "txt", collapse_lines = FALSE,
-  encoding = NULL, bundle_size = 1000, bundle_byte_limit = 7500000,
-  retry_limit = 50, clear_scratch_cache = TRUE, cores = detectCores() -
-  1, use_future = FALSE, in_memory = TRUE,
+  delete = FALSE, name_only = FALSE, id = NULL, text_column = NULL,
+  id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
+  collapse_lines = FALSE, encoding = NULL, bundle_size = 1000,
+  bundle_byte_limit = 7500000, retry_limit = 50,
+  clear_scratch_cache = TRUE, cores = detectCores() - 1,
+  use_future = FALSE, in_memory = TRUE,
   url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
   secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE)
 }
@@ -23,7 +24,10 @@ Not providing text will return the status of the named norming context.}
 \item{options}{Options to set for the norming context (e.g.,
 \code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).}
 
-\item{delete}{If \code{TRUE}, will request to remove the \code{name} context.}
+\item{delete}{Logical; If \code{TRUE}, will request to remove the \code{name} context.}
+
+\item{name_only}{Logical; If \code{TRUE}, will return a character vector of names
+only, including those of build-in contexts.}
 
 \item{id, text_column, id_column, files, dir, file_type, collapse_lines, encoding}{Additional
 arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.}
@@ -36,8 +40,10 @@ arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}
 \item{verbose}{Logical; if \code{TRUE}, will show status messages.}
 }
 \value{
-If \code{name} is not specified, a \code{data.frame} containing the statuses of each
-available custom norming context. If \code{text} is not specified, the status of the
+Nothing if \code{delete} if \code{TRUE}.
+Otherwise, if \code{name} is not specified, a character vector containing names of each
+available norming context (built-in and custom).
+If \code{text} is not specified, the status of the
 named context in a \code{list}. If \code{text}s are provided, a \code{list}:
 \itemize{
    \item \code{initial_status}: Initial status of the context.
@@ -57,7 +63,7 @@ where \code{norm_name} is the name you set here).
 \dontrun{
 
 # get status of all existing custom norming contexts
-contexts <- receptiviti_norming()
+contexts <- receptiviti_norming(name_only = TRUE)
 
 # create or get the status of a single custom norming context
 status <- receptiviti_norming("new_context")

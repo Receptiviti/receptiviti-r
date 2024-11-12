@@ -218,18 +218,21 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     context <- custom_context
     custom_context <- TRUE
   }
-  if (custom_context) {
-    norming_status <- receptiviti_norming(url = url, key = key, secret = secret, verbose = FALSE)
+  if (context != "written") {
+    norming_status <- receptiviti_norming(
+      name_only = TRUE, url = url, key = key, secret = secret, verbose = FALSE
+    )
     if (verbose) {
       message(
         "retrieved custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
       )
     }
-    if (!length(norming_status$name) || !(context %in% norming_status$name)) {
-      stop("custom norming context ", context, " is not on record", call. = FALSE)
-    }
-    if (norming_status$status[norming_status$name == context] != "completed") {
-      stop("custom norming context ", context, " is not complete", call. = FALSE)
+    context_id <- if (custom_context) paste0("custom/", context) else context
+    if (!length(norming_status) || !(context_id %in% norming_status)) {
+      stop(
+        "custom norming context ", context, " is not on record or is not complete",
+        call. = FALSE
+      )
     }
   }
   if (length(frameworks) && !("all" %in% frameworks) && grepl("2", version, fixed = TRUE)) {

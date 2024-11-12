@@ -12,7 +12,9 @@
 #' Not providing text will return the status of the named norming context.
 #' @param options Options to set for the norming context (e.g.,
 #' \code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).
-#' @param delete If \code{TRUE}, will request to remove the \code{name} context.
+#' @param delete Logical; If \code{TRUE}, will request to remove the \code{name} context.
+#' @param name_only Logical; If \code{TRUE}, will return a character vector of names
+#' only, including those of build-in contexts.
 #' @param id,text_column,id_column,files,dir,file_type,collapse_lines,encoding Additional
 #' arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.
 #' @param bundle_size,bundle_byte_limit,retry_limit,clear_scratch_cache,cores,use_future,in_memory
@@ -20,8 +22,10 @@
 #' \code{\link{receptiviti}}.
 #' @param key,secret,url Request arguments; same as those in \code{\link{receptiviti}}.
 #' @param verbose Logical; if \code{TRUE}, will show status messages.
-#' @returns If \code{name} is not specified, a \code{data.frame} containing the statuses of each
-#' available custom norming context. If \code{text} is not specified, the status of the
+#' @returns Nothing if \code{delete} if \code{TRUE}.
+#' Otherwise, if \code{name} is not specified, a character vector containing names of each
+#' available norming context (built-in and custom).
+#' If \code{text} is not specified, the status of the
 #' named context in a \code{list}. If \code{text}s are provided, a \code{list}:
 #' \itemize{
 #'    \item \code{initial_status}: Initial status of the context.
@@ -33,7 +37,7 @@
 #' \dontrun{
 #'
 #' # get status of all existing custom norming contexts
-#' contexts <- receptiviti_norming()
+#' contexts <- receptiviti_norming(name_only = TRUE)
 #'
 #' # create or get the status of a single custom norming context
 #' status <- receptiviti_norming("new_context")
@@ -63,15 +67,37 @@
 #' }
 #' @export
 
-receptiviti_norming <- function(name = NULL, text = NULL, options = list(), delete = FALSE, id = NULL, text_column = NULL,
-                                id_column = NULL, files = NULL, dir = NULL,
+receptiviti_norming <- function(name = NULL, text = NULL, options = list(), delete = FALSE, name_only = FALSE,
+                                id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
                                 file_type = "txt", collapse_lines = FALSE, encoding = NULL,
                                 bundle_size = 1000, bundle_byte_limit = 75e5, retry_limit = 50,
                                 clear_scratch_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
                                 url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
                                 secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE) {
   params <- handle_request_params(url, key, secret)
-  baseurl <- paste0(params$url, "/v2/norming/")
+  if (name_only) {
+    req <- curl::curl_fetch_memory(paste0(params$url, "/v2/norming"), params$handler)
+    if (req$status_code != 200) {
+      stop(
+        "failed to make norming list request: ", req$status_code,
+        call. = FALSE
+      )
+    }
+    norms <- jsonlite::fromJSON(rawToChar(req$content))
+    if (verbose) {
+      if (length(norms)) {
+        message(
+          "available norming context(s): ",
+          paste(sub("custom/", "", norms, fixed = TRUE), collapse = ", ")
+        )
+      } else {
+        message("no custom norming contexts found")
+      }
+    }
+    return(norms)
+  }
+
+  baseurl <- paste0(params$url, "/v2/norming/custom/")
   if (!is.null(name) && grepl("[^a-z0-9_.-]", name)) {
     stop(
       "`name` can only include lowercase letters, numbers, hyphens, underscores, or periods",
@@ -80,7 +106,6 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   }
 
   # list current contexts
-  if (verbose) message("requesting list of existing custom norming contexts")
   req <- curl::curl_fetch_memory(baseurl, params$handler)
   if (req$status_code != 200) {
     stop(
@@ -91,7 +116,10 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   norms <- jsonlite::fromJSON(rawToChar(req$content))
   if (length(norms)) {
     if (verbose && is.null(name)) {
-      message("custom norming context(s) found: ", paste(norms$name, collapse = ", "))
+      message(
+        "custom norming context(s) found: ",
+        paste(sub("custom/", "", norms$name, fixed = TRUE), collapse = ", ")
+      )
     }
   } else {
     if (verbose && is.null(name)) message("no custom norming contexts found")
@@ -101,7 +129,8 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     return(norms)
   }
 
-  if (name %in% norms$name) {
+  context_id <- paste0("custom/", name)
+  if (context_id %in% norms$name) {
     if (delete) {
       curl::handle_setopt(params$handler, customrequest = "DELETE")
       req <- curl::curl_fetch_memory(paste0(baseurl, name), params$handler)
@@ -112,14 +141,14 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       }
       return(invisible(NULL))
     }
-    status <- as.list(norms[norms$name == name, ])
+    status <- as.list(norms[norms$name == context_id, ])
     if (length(options)) {
       warning(
         "context ", name, " already exists, so options do not apply",
         call. = FALSE
       )
     }
-  } else {
+  } else if (!delete) {
     # establish a new context if needed
     if (verbose) message("requesting creation of custom context ", name)
     curl::handle_setopt(
