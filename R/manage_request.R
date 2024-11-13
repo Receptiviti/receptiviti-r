@@ -140,6 +140,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     version <- "v2"
     endpoint <- "norming"
     full_url <- url
+    request_cache <- FALSE
   } else {
     url_parts <- unlist(strsplit(regmatches(
       url, gregexpr("/[Vv]\\d+(?:/[^/]+)?", url)

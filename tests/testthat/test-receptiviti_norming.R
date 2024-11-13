@@ -8,18 +8,18 @@ skip_if(Sys.getenv("RECEPTIVITI_KEY") == "", "no API key")
 
 test_that("listing works", {
   custom_norms <- receptiviti_norming()
-  expect_true("custom/short_text_r01" %in% custom_norms$name)
+  expect_true("custom/test" %in% custom_norms$name)
 
   custom_norms <- receptiviti_norming(name_only = TRUE)
-  expect_true("custom/short_text_r01" %in% custom_norms)
+  expect_true("custom/test" %in% custom_norms)
 })
 
 test_that("retrieving a status works", {
-  expect_identical(receptiviti_norming("short_text_r01")$name, "custom/short_text_r01")
+  expect_identical(receptiviti_norming("test")$name, "custom/test")
 })
 
 test_that("updating works", {
-  norming_context <- "short_text_r12"
+  norming_context <- "short_text"
   receptiviti_norming(norming_context, delete = TRUE)
   expect_warning(
     {
