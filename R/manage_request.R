@@ -2,8 +2,8 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
                            file_type = "txt", encoding = NULL, context = "written",
                            api_args = getOption("receptiviti.api_args", list()),
                            bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50,
-                           clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, use_future = FALSE,
-                           in_memory = TRUE, verbose = FALSE, make_request = TRUE,
+                           clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, collect_results = TRUE,
+                           use_future = FALSE, in_memory = TRUE, verbose = FALSE, make_request = TRUE,
                            text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
                            cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"), key = Sys.getenv("RECEPTIVITI_KEY"),
                            secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
@@ -384,26 +384,37 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     } else {
       initial <- paste0("h", substr(bundle$hashes, 1, 1))
       set <- !is.na(text) & text != "" & text != "logical(0)" & !duplicated(bundle$hashes)
-      res_cached <- res_fresh <- NULL
+      res_cached <- cached_cols <- res_fresh <- NULL
+      nres <- ncached <- 0
       check_cache <- !cache_overwrite && (cache != "" && length(list.dirs(cache)))
       if (check_cache) {
-        db <- arrow::open_dataset(cache, partitioning = arrow::schema(bin = arrow::string()), format = cache_format)
+        db <- arrow::open_dataset(
+          cache,
+          partitioning = arrow::schema(bin = arrow::string()), format = cache_format
+        )
+        cached_cols <- colnames(db)
         cached <- if (!is.null(db$schema$GetFieldByName("text_hash"))) {
           text_hash <- NULL
+          su <- dplyr::filter(db, bin %in% unique(initial), text_hash %in% bundle$hashes)
           tryCatch(
-            dplyr::compute(dplyr::filter(db, bin %in% unique(initial), text_hash %in% bundle$hashes)),
+            dplyr::compute(if (collect_results) su else dplyr::select(su, text_hash)),
             error = function(e) matrix(integer(), 0)
           )
         } else {
           matrix(integer(), 0)
         }
-        if (nrow(cached)) {
+        ncached <- nrow(cached)
+        if (ncached) {
           cached <- as.data.frame(cached$to_data_frame())
           if (anyDuplicated(cached$text_hash)) cached <- cached[!duplicated(cached$text_hash), ]
           rownames(cached) <- cached$text_hash
           cached_set <- which(bundle$hashes %in% cached$text_hash)
           set[cached_set] <- FALSE
-          res_cached <- cbind(id = bundle$id[cached_set], cached[bundle$hashes[cached_set], ])
+          if (collect_results) {
+            res_cached <- cbind(
+              id = bundle$id[cached_set], cached[bundle$hashes[cached_set], ]
+            )
+          }
         }
       }
       valid_options <- names(api_args)
@@ -425,45 +436,64 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
         if (length(valid_options)) {
           res_fresh <- res_fresh[, !colnames(res_fresh) %in% valid_options, drop = FALSE]
         }
-        if (check_cache && !is.null(res_cached) && !all(colnames(res_cached) %in% colnames(res_fresh))) {
+        if (ncached && !all(cached_cols %in% colnames(res_fresh))) {
           res_cached <- NULL
+          ncached <- 0
           body <- jsonlite::toJSON(lapply(cached_set, make_bundle), auto_unbox = TRUE)
           res_fresh <- rbind(res_fresh, request(
             body, digest::digest(body, serialize = FALSE),
             initial[cached_set], bundle$id[cached_set]
           ))
         }
-        if (cache != "" && nrow(res_fresh)) {
-          writer <- switch(cache_format,
-            parquet = arrow::write_parquet,
-            feather = arrow::write_feather,
-            ipc = arrow::write_ipc_file,
-            csv = arrow::write_csv_arrow
+        nres <- nrow(res_fresh)
+        if (cache != "" && nres) {
+          writer <- if (cache_format == "parquet") arrow::write_parquet else arrow::write_feather
+          cols <- vapply(
+            res_fresh[, !(colnames(res_fresh) %in% c("id", "bin", names(api_args)))],
+            is.character, TRUE
           )
+          schema <- list()
+          for (v in names(cols)) {
+            schema[[v]] <- if (cols[[v]]) {
+              arrow::string()
+            } else if (v %in% c("summary.word_count", "summary.sentence_count")) {
+              if (anyNA(res_fresh[[v]])) res_fresh[[v]][is.na(res_fresh[[v]])] <- NA_integer_
+              arrow::int32()
+            } else {
+              if (anyNA(res_fresh[[v]])) res_fresh[[v]][is.na(res_fresh[[v]])] <- NA_real_
+              arrow::float64()
+            }
+          }
+          schema <- arrow::schema(schema)
           for (part_bin in unique(res_fresh$bin)) {
             part <- res_fresh[res_fresh$bin == part_bin, ]
             part$id <- NULL
             part$bin <- NULL
             bin_dir <- paste0(cache, "/bin=", part_bin, "/")
             dir.create(bin_dir, FALSE, TRUE)
-            writer(part, paste0(bin_dir, body_hash, "-0.", cache_format))
+            writer(
+              arrow::as_arrow_table(part, schema = schema),
+              paste0(bin_dir, "fragment-", body_hash, "-0.", cache_format)
+            )
           }
         }
       }
-      res <- rbind(res_cached, res_fresh)
-      if (length(valid_options)) for (n in valid_options) res[[n]] <- api_args[[n]]
-      missing_ids <- !bundle$id %in% res$id
-      if (any(missing_ids)) {
-        varnames <- colnames(res)[colnames(res) != "id"]
-        res <- rbind(res, cbind(
-          id = bundle$id[missing_ids],
-          as.data.frame(matrix(NA, sum(missing_ids), length(varnames), dimnames = list(NULL, varnames)))
-        ))
-        res$text_hash <- structure(bundle$hashes, names = bundle$id)[res$id]
+      if (collect_results) {
+        res <- rbind(res_cached, res_fresh)
+        if (length(valid_options)) for (n in valid_options) res[[n]] <- api_args[[n]]
+        missing_ids <- !bundle$id %in% res$id
+        if (any(missing_ids)) {
+          varnames <- colnames(res)[colnames(res) != "id"]
+          res <- rbind(res, cbind(
+            id = bundle$id[missing_ids],
+            as.data.frame(matrix(NA, sum(missing_ids), length(varnames), dimnames = list(NULL, varnames)))
+          ))
+          res$text_hash <- structure(bundle$hashes, names = bundle$id)[res$id]
+        }
       }
-      prog(amount = nrow(res))
+      prog(amount = nres + ncached)
     }
-    res
+    if (collect_results) res else NULL
   }
 
   # make request(s)
@@ -478,7 +508,7 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
       "doprocess", "request", "process", "text_column", "prog", "make_request", "full_url", "cache",
       "cache_overwrite", "use_future", "cores", "bundles", "cache_format", "request_cache", "auth",
       "version", "to_norming", "text_as_paths", "retry_limit", "api_args", "args_hash", "encoding",
-      "handle_encoding"
+      "handle_encoding", "collect_results"
     )) {
       call_env[[name]] <- get(name)
     }
@@ -493,7 +523,11 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
     if (verbose) message("processing ", bundle_ref, " sequentially (", round(proc.time()[[3]] - st, 4), ")")
     lapply(bundles, process)
   }
-  if (verbose) message("done retrieving; preparing final results (", round(proc.time()[[3]] - st, 4), ")")
-  final_res <- do.call(rbind, results)
-  list(data = data, final_res = final_res, provided_id = provided_id)
+  if (verbose) message("done retrieving (", round(proc.time()[[3]] - st, 4), ")")
+  if (collect_results) {
+    final_res <- do.call(rbind, results)
+    list(data = data, final_res = final_res, provided_id = provided_id)
+  } else {
+    NULL
+  }
 }

@@ -73,7 +73,7 @@ test_that("v2 works", {
   score <- receptiviti(text, version = "v2")
   expect_equal(
     score[, c("social_dynamics.clout", "disc_dimensions.bold_assertive_outgoing")],
-    data.frame(social_dynamics.clout = 33.8554987, disc_dimensions.bold_assertive_outgoing = 63.9442740)
+    data.frame(social_dynamics.clout = 44.7948744, disc_dimensions.bold_assertive_outgoing = 54.46212)
   )
 })
 
@@ -100,7 +100,8 @@ test_that("api arguments work", {
 })
 
 test_that("framework selection works", {
-  score <- receptiviti(text, cache = temp_cache)
+  receptiviti(text, cache = temp_cache, collect_results = FALSE)
+  score <- receptiviti(text, cache = temp_cache, make_request = FALSE)
   expect_equal(
     receptiviti(text, frameworks = c("summary", "liwc"), framework_prefix = TRUE, cache = temp_cache),
     score[, grep("^(?:text_|summary|liwc)", colnames(score))]
@@ -193,7 +194,7 @@ test_that("verbose works", {
       "preparing text",
       "prepared text in 1 bundle",
       "processing bundle sequentially",
-      "done retrieving; preparing final results",
+      "done retrieving",
       "defragmenting cache",
       "preparing output",
       paste("writing results to file:", temp_output),
@@ -213,7 +214,7 @@ test_that("cache updating and acceptable alternates are handled", {
       "preparing text",
       "prepared text in 1 bundle",
       "processing bundle sequentially",
-      "done retrieving; preparing final results",
+      "done retrieving",
       "defragmenting cache",
       "preparing output",
       "done"

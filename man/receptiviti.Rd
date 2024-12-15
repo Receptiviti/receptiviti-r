@@ -13,9 +13,9 @@ receptiviti(text = NULL, output = NULL, id = NULL, text_column = NULL,
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
   bundle_byte_limit = 7500000, collapse_lines = FALSE, retry_limit = 50,
   clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
-  cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
-  verbose = FALSE, overwrite = FALSE, compress = FALSE,
-  make_request = TRUE, text_as_paths = FALSE,
+  cores = detectCores() - 1, collect_results = TRUE, use_future = FALSE,
+  in_memory = TRUE, verbose = FALSE, overwrite = FALSE,
+  compress = FALSE, make_request = TRUE, text_as_paths = FALSE,
   cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
   cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
   key = Sys.getenv("RECEPTIVITI_KEY"),
@@ -92,6 +92,8 @@ from a previous identical request.}
 
 \item{cores}{Number of CPU cores to split bundles across, if there are multiple bundles. See the Parallelization section.}
 
+\item{collect_results}{Logical; if \code{FALSE}, will not retain bundle results in memory for return.}
+
 \item{use_future}{Logical; if \code{TRUE}, uses a \code{future} back-end to process bundles, in which case,
 parallelization can be controlled with the \code{\link[future]{plan}} function (e.g., \code{plan("multisession")}
 to use multiple cores); this is required to see progress bars when using multiple cores. See the Parallelization section.}
@@ -137,7 +139,8 @@ which defaults to \code{"framework"}.}
 the HTTP headers.}
 }
 \value{
-A \code{data.frame} with columns for \code{text} (if \code{return_text} is \code{TRUE}; the originally entered text),
+Nothing if \code{collect_results} is \code{FALSE}.
+Otherwise, a \code{data.frame} with columns for \code{text} (if \code{return_text} is \code{TRUE}; the originally entered text),
 \code{id} (if one was provided), \code{text_hash} (the MD5 hash of the text), a column each for relevant entries in \code{api_args},
 and scores from each included framework (e.g., \code{summary.word_count} and \code{liwc.i}). If \code{as_list} is \code{TRUE},
 returns a list with a named entry containing such a \code{data.frame} for each framework.
@@ -145,6 +148,38 @@ returns a list with a named entry containing such a \code{data.frame} for each f
 \description{
 The main function to access the \href{https://www.receptiviti.com}{Receptiviti} API.
 }
+\section{Request Process}{
+
+This function (along with the internal \code{manage_request} function) handles texts and results in several steps:
+\enumerate{
+  \item Prepare bundles (split \code{text} into <= \code{bundle_size} and <= \code{bundle_byte_limit} bundles).
+  \enumerate{
+    \item If \code{text} points to a directory or list of files, these will be read in later.
+    \item If \code{in_memory} is \code{FALSE}, bundles are written to a temporary location,
+          and read back in when the request is made.
+  }
+  \item Get scores for texts within each bundle.
+  \enumerate{
+    \item If texts are paths, or \code{in_memory} is \code{FALSE}, will load texts.
+    \item If \code{cache} is set, will skip any texts with cached scores.
+    \item If \code{request_cache} is \code{TRUE}, will check for a cached request.
+    \item If any texts need scoring and \code{make_request} is \code{TRUE}, will send unscored texts to the API.
+  }
+  \item If a request was made and \code{request_cache} is set, will cache the response.
+  \item If \code{cache} is set, will write bundle scores to the cache.
+  \item After requests are made, if \code{cache} is set, will defragment the cache
+        (combine bundle results within partitions).
+  \item If \code{collect_results} is \code{TRUE}, will prepare results:
+  \enumerate{
+    \item Will realign results with \code{text} (and \code{id} if provided).
+    \item If \code{output} is specified, will write realigned results to it.
+    \item Will drop additional columns (such as \code{custom} and \code{id} if not provided).
+    \item If \code{framework} is specified, will use it to select columns of the results.
+    \item Returns results.
+  }
+}
+}
+
 \section{Cache}{
 
 If the \code{cache} argument is specified, results for unique texts are saved in an

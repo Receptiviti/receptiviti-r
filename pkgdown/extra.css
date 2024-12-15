@@ -1,9 +1,3 @@
-.navbar-brand, .navbar-brand:hover {
-  color: #fff;
-}
-.nav-text.text-muted, .navbar-dark input[type="search"]::placeholder {
-  color: #919aa1 !important;
-}
-.nav-link {
-  color: #ffffff8c;
+.navbar-brand, .nav-link, .nav-link:hover, .navbar-brand:hover {
+  color: var(--bs-body-color);
 }

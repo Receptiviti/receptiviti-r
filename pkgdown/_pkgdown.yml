@@ -2,16 +2,19 @@ url: https://receptiviti.github.io/receptiviti-r
 
 template:
   bootstrap: 5
-  bootswatch: lux
+  bootswatch: yeti
   bslib:
-    link-color: "#355aa3"
-    pkgdown-nav-height: 100px
+    nav-link: "#e75f63"
+    link-color: "#e75f63"
+    link-color-dark: "#e75f63"
+    link-decoration: none
+  light-switch: true
 
 navbar:
   bg: primary
   structure:
-    left: [intro, reference, versions]
-    right: [github]
+    left: [intro, reference, articles, versions]
+    right: [search, lightswitch, github]
   components:
     versions:
       text: Versions

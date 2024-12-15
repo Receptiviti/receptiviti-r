@@ -1,0 +1,121 @@
+---
+title: "High Volume"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{High Volume}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+*Built with R 
+`r getRversion()`*
+
+***
+
+```{r, include = FALSE}
+knitr::opts_knit$set(root.dir = "../")
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+Sys.setenv(
+  RECEPTIVITI_KEY = Sys.getenv("RECEPTIVITI_KEY_TEST"),
+  RECEPTIVITI_SECRET = Sys.getenv("RECEPTIVITI_SECRET_TEST"),
+  RECEPTIVITI_URL = Sys.getenv("RECEPTIVITI_URL_TEST")
+)
+
+unlink("../test_text_results", TRUE)
+```
+
+The Receptiviti API has <a href="https://docs.receptiviti.com/api-reference/framework-bulk" rel="noreferrer" target="_blank">limits</a>
+on bundle requests, so the `receptiviti()` function splits texts into acceptable bundles, to be spread across multiple requests.
+
+This means the only remaining limitation on the number of texts that can be processed comes
+from the memory of the system sending requests.
+
+The basic way to work around this limitation is to fully process smaller chunks of text.
+
+There are a few ways to avoid loading all texts and results.
+
+## Cache as Output
+
+Setting the `collect_results` argument to `False` avoids retaining all batch results in memory as they are receive, but means
+results are not returned, so the they have to be collected in the cache.
+
+If texts are also too big to load into memory, they can be loaded from files at request time.
+By default, when multiple files pointed to as `text`, the actual texts are only loaded when they are being sent for scoring,
+which means only `bundle_size` \* `cores` texts are loaded at a time.
+
+We can start by writing some small text examples to files:
+
+```{r}
+base_dir <- "../../"
+text_dir <- paste0(base_dir, "test_texts/")
+dir.create(text_dir, FALSE, TRUE)
+
+for (i in seq_len(10)) {
+  writeLines(
+    paste0("An example text ", i, "."),
+    paste0(text_dir, "example_", i, ".txt")
+  )
+}
+```
+
+And then minimally load these and their results by saving results to a Parquet dataset.
+
+Disabling the `request_cache` will also avoid storing a copy of raw results.
+
+```{r}
+library(receptiviti)
+
+db_dir <- paste0(base_dir, "test_results")
+dir.create(db_dir, FALSE, TRUE)
+
+receptiviti(
+  dir = text_dir, collect_results = FALSE, cache = db_dir,
+  request_cache = FALSE, cores = 1
+)
+```
+
+Results are now available in the cache directory, which you can load in using the request function again:
+
+```{r}
+# adding make_request=False just ensures requests are not made if not found
+results <- receptiviti(dir = text_dir, cache = db_dir, make_request = FALSE)
+results[, 2:4]
+```
+
+## Manual Chunking
+
+A more flexible approach would be to process smaller chunks of text normally, and handle loading and storing results yourself.
+
+In this case, it may be best to disable parallelization (if you're parallelizing manually),
+and explicitly disable the primary cache (in case it's specified in an environment variable).
+
+```{r}
+res_dir <- paste0(base_dir, "text_results_manual")
+dir.create(res_dir, FALSE, TRUE)
+
+# using the same files as before
+files <- list.files(text_dir, full.names = TRUE)
+
+# process 5 files at a time
+for (i in seq(1, 10, 5)) {
+  file_subset <- files[seq(i, i + 4)]
+  results <- receptiviti(
+    files = file_subset, id = file_subset,
+    cores = 1, cache = FALSE, request_cache = FALSE
+  )
+  vroom::vroom_write(
+    results, paste0(res_dir, "/files_", i, "-", i + 5, ".csv.xz"), ","
+  )
+}
+```
+
+Now results will be stored in smaller files:
+
+```{r}
+vroom::vroom(paste0(res_dir, "/files_1-6.csv.xz"))
+```
