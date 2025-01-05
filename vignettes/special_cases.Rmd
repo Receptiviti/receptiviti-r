@@ -1,8 +1,8 @@
 ---
-title: "High Volume"
+title: "Special Cases"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{High Volume}
+  %\VignetteIndexEntry{Special Cases}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -20,14 +20,65 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-Sys.setenv(
-  RECEPTIVITI_KEY = Sys.getenv("RECEPTIVITI_KEY_TEST"),
-  RECEPTIVITI_SECRET = Sys.getenv("RECEPTIVITI_SECRET_TEST"),
-  RECEPTIVITI_URL = Sys.getenv("RECEPTIVITI_URL_TEST")
-)
-
+library(receptiviti)
+receptiviti_norming("custom_example", delete = TRUE)
 unlink("../test_text_results", TRUE)
 ```
+
+# Norming Contexts
+
+Some measures are <a href="https://docs.receptiviti.com/the-receptiviti-api/normed-vs-dictionary-counted-measures" rel="noreferrer" target="_blank">normed</a> against a sample of text.
+These samples may be more or less appropriate to your texts.
+
+## Built-In
+
+The default context is meant for general written text, and there is another built-in context for general spoken text:
+```{r}
+library(receptiviti)
+
+text <- "Text to be normed differently."
+written <- receptiviti(text, version = "v2")
+spoken <- receptiviti(text, version = "v2", context = "spoken")
+
+# select a few categories that differ between contexts
+differing <- which(written != spoken)[1:10]
+
+# note that the text hashes are sensitive to the set context
+as.data.frame(t(rbind(written = written, spoken = spoken)[, differing]))
+```
+
+## Custom
+
+You can also norm against your own sample, which involves first establishing a context,
+then scoring against it.
+
+Use the `receptiviti_norming` function to establish a custom context:
+```{r}
+context_text <- c(
+  "Text with normed in it.",
+  "Text with differently in it."
+)
+
+# set lower word count filter for this toy sample
+context_status <- receptiviti_norming(
+  name = "custom_example",
+  text = context_text,
+  options = list(word_count_filter = 1),
+  verbose = FALSE
+)
+
+# the `second_pass` result shows what was analyzed
+context_status$second_pass
+```
+
+Then use the `custom_context` argument to specify that norming context when scoring:
+```{r}
+custom <- receptiviti(text, version = "v2", custom_context = "custom_example")
+
+as.data.frame(t(rbind(custom = custom[, differing])))
+```
+
+# High Volume
 
 The Receptiviti API has <a href="https://docs.receptiviti.com/api-reference/framework-bulk" rel="noreferrer" target="_blank">limits</a>
 on bundle requests, so the `receptiviti()` function splits texts into acceptable bundles, to be spread across multiple requests.
@@ -68,8 +119,6 @@ And then minimally load these and their results by saving results to a Parquet d
 Disabling the `request_cache` will also avoid storing a copy of raw results.
 
 ```{r}
-library(receptiviti)
-
 db_dir <- paste0(base_dir, "test_results")
 dir.create(db_dir, FALSE, TRUE)
 
