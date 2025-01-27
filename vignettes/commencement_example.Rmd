@@ -1,0 +1,259 @@
+---
+title: "Commencement Example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Commencement Example}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+*Built with R 
+`r getRversion()`*
+
+***
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.height = 4,
+  fig.width = 8.84,
+  dev.args = list(bg = "#222222"),
+  dev = "CairoSVG",
+  fig.ext = "svg"
+)
+library(knitr)
+library(receptiviti)
+library(lingmatch)
+library(splot)
+options(splot.dark = TRUE)
+```
+
+This example uses the `Receptiviti` API to analyze commencement speeches.
+
+## Data
+
+We'll start by collecting and processing the speeches.
+
+### Collection
+
+The speeches used to be provided more directly, but the service hosting them has since shut down.
+
+They are still available in a slightly less convenient form,
+as the source of a site that displays them:
+[whatrocks.github.io/commencement-db](https://whatrocks.github.io/commencement-db).
+
+First, we can retrieve metadata from a separate repository:
+
+```{r}
+speeches <- read.csv(paste0(
+  "https://raw.githubusercontent.com/whatrocks/markov-commencement-speech",
+  "/refs/heads/master/speech_metadata.csv"
+))
+
+library(knitr)
+kable(speeches[1:5, 2:4])
+```
+
+One file in the source repository contains an invalid character on Windows (`:`),
+so we'll need to pull them in individually, rather than cloning the repository:
+
+```{r}
+text_dir <- "../../commencement_speeches/"
+dir.create(text_dir, FALSE)
+
+text_url <- paste0(
+  "https://raw.githubusercontent.com/whatrocks/commencement-db",
+  "/refs/heads/master/src/pages/"
+)
+for (file in speeches$filename) {
+  out_file <- paste0(text_dir, sub(":", "", file, fixed = TRUE))
+  if (!file.exists(out_file)) {
+    text <- readLines(paste0(
+      text_url, sub(".txt", "/index.md", file, fixed = TRUE)
+    ), warn = FALSE)
+    writeLines(
+      text[-seq_len(max(grep("^---", text)) + 1)],
+      out_file
+    )
+  }
+}
+```
+
+### Text Preparation
+
+Now we can read in the texts and associate them with their metadata:
+
+```{r}
+speeches$text <- vapply(speeches$filename, function(file) {
+  paste(readLines(paste0(
+    text_dir, sub(":", "", file, fixed = TRUE)
+  ), warn = FALSE), collapse = " ")
+}, "")
+```
+
+The texts contain a few special characters, which we can replace:
+
+```{r}
+# general special character replacement
+library(lingmatch)
+clean <- lma_dict(special, as.function = gsub)
+speeches$text <- clean(speeches$text)
+
+# ensure list items are treated as separate sentences
+speeches$text <- gsub("([a-z]) •", "\\1. ", speeches$text)
+```
+
+## Analyze Full Texts
+
+We might start by seeing if any speeches stand out in terms of language style.
+
+### Load Package
+
+If this is your first time using the package, see the
+[Get Started](https://receptiviti.github.io/receptiviti-r/articles/receptiviti.html)
+guide to install it and set up your API credentials.
+
+```{r}
+library(receptiviti)
+```
+
+### Process Text
+
+Now we can send the texts to the API for scoring, and join the results we get to
+the metadata:
+
+```{r}
+# since our texts are from speeches,
+# it might make sense to use the spoken norming context
+processed <- receptiviti(speeches$text, version = "v2", context = "spoken")
+processed <- cbind(speeches[, 1:4], processed)
+
+kable(processed[1:5, -(1:7)], digits = 3, row.names = FALSE)
+```
+
+### Analyze Style
+
+To get at stylistic uniqueness, we can calculate Language Style Matching
+between each speech and the mean of all speeches:
+
+```{r}
+# Currently, the lingmatch package only automatically handles
+# `liwc.` prefixes, so we'll rename the `liwc15.` ones.
+colnames(processed) <- sub("liwc15", "liwc", colnames(processed), fixed = TRUE)
+
+processed$lsm_mean <- lingmatch(processed, mean, type = "lsm")$sim
+
+kable(processed[
+  order(processed$lsm_mean)[1:10],
+  c("name", "school", "year", "lsm_mean", "summary.word_count")
+], digits = 3, row.names = FALSE)
+```
+
+Here, it is notable that the most stylistically unique speech was delivered in
+American Sign Language, and the second most stylistically unique speech was
+a short rhyme.
+
+We might also want to see which speeches are most similar to one another:
+
+```{r}
+# calculate all pairwise comparisons
+lsm_pairs <- lingmatch(processed, type = "lsm", symmetrical = TRUE)$sim
+
+# set self-matches to 0
+diag(lsm_pairs) <- 0
+
+# identify the closest match to each speech
+speeches$match <- max.col(lsm_pairs, "last")
+best_match <- lsm_pairs[
+  speeches$match + (seq_len(nrow(lsm_pairs)) - 1) * nrow(lsm_pairs)
+]
+
+# look at the top matches
+top_matches <- order(-best_match)[1:20]
+top_matches <- data.frame(a = top_matches, b = speeches[top_matches, "match"])
+top_matches <- top_matches[!duplicated(apply(
+  top_matches, 1, function(pair) paste(sort(pair), collapse = "")
+)), ]
+kable(data.frame(
+  speeches[top_matches$a, 2:4],
+  Similarity = best_match[top_matches$a],
+  speeches[top_matches$b, 2:4],
+  check.names = FALSE
+), digits = 3, row.names = FALSE)
+```
+
+## Analyze Segments
+
+Another thing we might look for is trends within each speech.
+For instance, are there common emotional trajectories over the course of a speech?
+
+One way to look at this would be to split texts into roughly equal sizes,
+and score each section:
+
+```{r}
+# split texts into 3 segments each, keeping sentences together
+segmented_text <- read.segments(
+  text = speeches$text, segment = 3, bysentence = TRUE
+)
+segmented_text <- cbind(speeches[segmented_text$input, 1:4], segmented_text)
+
+kable(segmented_text[1:9, 2:7], row.names = FALSE)
+```
+
+### Process Text
+
+Now we can send each segment to the API to be scored:
+
+```{r}
+processed_segments <- receptiviti(
+  segmented_text$text,
+  version = "v2", context = "spoken"
+)
+segmented_text <- cbind(segmented_text, processed_segments)
+
+kable(segmented_text[1:9, -(1:10)], digits = 3, row.names = FALSE)
+```
+
+### Analyze Scores
+
+The [SALLEE framework](https://docs.receptiviti.com/frameworks/emotions)
+offers measures of emotions, so we might see which categories deviate
+the most in any of their segments:
+
+```{r}
+# select the narrower SALLEE categories
+emotions <- segmented_text[, grep("^sallee", colnames(segmented_text))[-(1:6)]]
+
+# make contrasts for each segment
+contrasts <- matrix(
+  rep_len(c(1, 0, 0, 0, 1, 0, 0, 0, 1), nrow(segmented_text) * 3),
+  ncol = 3, byrow = TRUE
+)
+
+# correlate emotion scores with contrasts
+segment_deviations <- abs(cor(emotions, contrasts))
+
+# select the 5 most deviating emotions
+most_deviating <- segmented_text[, names(sort(-apply(
+  segment_deviations, 1, max
+))[1:5])]
+```
+
+Now we can look at those categories across segments:
+
+```{r, fig.alt="SALLEE scores by segment"}
+library(splot)
+splot(
+  most_deviating ~ segment, segmented_text,
+  laby = "Score", title = FALSE, mv.as.x = TRUE, type = "bar"
+)
+```
+
+```{r, fig.alt="scaled SALLEE scores by segment"}
+splot(
+  scale(most_deviating) ~ segment, segmented_text,
+  leg = "out", laby = "Score (Scaled)", title = FALSE, prat = c(4, 1)
+)
+```

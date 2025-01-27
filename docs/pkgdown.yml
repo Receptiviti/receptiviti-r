@@ -2,9 +2,10 @@ pandoc: '3.2'
 pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
+  commencement_example: commencement_example.html
   receptiviti: receptiviti.html
   special_cases: special_cases.html
-last_built: 2025-01-05T13:30Z
+last_built: 2025-01-27T19:07Z
 urls:
   reference: https://receptiviti.github.io/receptiviti-r/reference
   article: https://receptiviti.github.io/receptiviti-r/articles
