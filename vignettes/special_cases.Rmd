@@ -63,7 +63,7 @@ context_text <- c(
 context_status <- receptiviti_norming(
   name = "custom_example",
   text = context_text,
-  options = list(word_count_filter = 1),
+  options = list(min_word_count = 1),
   verbose = FALSE
 )
 

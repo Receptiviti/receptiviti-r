@@ -11,7 +11,7 @@
 #' @param text Text to be processed and used as the custom norming context.
 #' Not providing text will return the status of the named norming context.
 #' @param options Options to set for the norming context (e.g.,
-#' \code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).
+#' \code{list(min_word_count = 350,} \code{max_punctuation = .25)}).
 #' @param delete Logical; If \code{TRUE}, will request to remove the \code{name} context.
 #' @param name_only Logical; If \code{TRUE}, will return a character vector of names
 #' only, including those of build-in contexts.
@@ -163,9 +163,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     }
     status <- jsonlite::fromJSON(rawToChar(req$content))
     for (option in names(options)) {
-      if (!(option %in% names(status))) {
-        warning("option ", option, " was not set", call. = FALSE)
-      } else if (status[[option]] != options[[option]]) {
+      if (!is.null(status[[option]]) && status[[option]] != options[[option]]) {
         warning("set option ", option, " does not match the requested value", call. = FALSE)
       }
     }
@@ -205,7 +203,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     )$final_res
   }
   second_pass <- NULL
-  if (!is.null(first_pass$analyzed) && all(first_pass$analyzed == 0)) {
+  if (!is.null(first_pass$analyzed_samples) && all(first_pass$analyzed_samples == 0)) {
     warning(
       "no texts were successfully analyzed in the first pass, so second pass was skipped",
       call. = FALSE
@@ -222,7 +220,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       verbose = verbose, to_norming = TRUE
     )$final_res
   }
-  if (!is.null(second_pass$analyzed) && all(second_pass$analyzed == 0)) {
+  if (!is.null(second_pass$analyzed_samples) && all(second_pass$analyzed_samples == 0)) {
     warning("no texts were successfully analyzed in the second pass", call. = FALSE)
   }
   invisible(list(

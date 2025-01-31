@@ -21,15 +21,7 @@ test_that("retrieving a status works", {
 test_that("updating works", {
   norming_context <- "short_text"
   receptiviti_norming(norming_context, delete = TRUE)
-  expect_warning(
-    {
-      initial_status <- receptiviti_norming(
-        norming_context,
-        options = list(word_count_filter = 1, invalid_option = 1)
-      )
-    },
-    "option invalid_option was not set"
-  )
+  receptiviti_norming(norming_context, options = list(min_word_count = 1))
   expect_error(receptiviti(
     "a text to score",
     version = "v2", custom_context = norming_context

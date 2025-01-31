@@ -22,7 +22,7 @@ Not providing a name will list the previously created contexts.}
 Not providing text will return the status of the named norming context.}
 
 \item{options}{Options to set for the norming context (e.g.,
-\code{list(word_count_filter = 350,} \code{punctuation_filter = .25)}).}
+\code{list(min_word_count = 350,} \code{max_punctuation = .25)}).}
 
 \item{delete}{Logical; If \code{TRUE}, will request to remove the \code{name} context.}
 

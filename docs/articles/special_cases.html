@@ -162,16 +162,16 @@ custom context:</p>
 <span><span class="va">context_status</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/receptiviti_norming.html">receptiviti_norming</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">"custom_example"</span>,</span>
 <span>  text <span class="op">=</span> <span class="va">context_text</span>,</span>
-<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>word_count_filter <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>min_word_count <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># the `second_pass` result shows what was analyzed</span></span>
 <span><span class="va">context_status</span><span class="op">$</span><span class="va">second_pass</span></span>
-<span><span class="co">#&gt;                          body_hash submitted blank word_count_filtered</span></span>
-<span><span class="co">#&gt; 1 a8ad333a99c513c46f270f369dc39dc2         2     0                   0</span></span>
-<span><span class="co">#&gt;   punctuation_filtered analyzed word_count</span></span>
-<span><span class="co">#&gt; 1                    0        2         10</span></span></code></pre></div>
+<span><span class="co">#&gt;                          body_hash submitted_samples analyzed_samples</span></span>
+<span><span class="co">#&gt; 1 a8ad333a99c513c46f270f369dc39dc2                 2                2</span></span>
+<span><span class="co">#&gt;   analyzed_word_count filtered_blank filtered_word_count filtered_punctuation</span></span>
+<span><span class="co">#&gt; 1                  10              0                   0                    0</span></span></code></pre></div>
 <p>Then use the <code>custom_context</code> argument to specify that
 norming context when scoring:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">

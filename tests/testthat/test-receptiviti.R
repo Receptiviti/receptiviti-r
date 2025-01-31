@@ -256,12 +256,12 @@ test_that("reading from files works", {
   file_txt <- paste0(temp, "/texts.txt")
   file_csv <- paste0(temp, "/texts.csv")
   writeLines(texts, file_txt)
-  csv_data <- data.frame(id = text_seq, text = texts)
+  csv_data <- data.frame(id = text_seq, raw_text = texts)
   arrow::write_csv_arrow(csv_data, file_csv)
   files_csv <- paste0(temp_source, text_seq, ".csv")
   for (i in text_seq) {
     writeLines(texts[i], files_txt[i])
-    arrow::write_csv_arrow(data.frame(id = i, text = texts[i]), files_csv[i])
+    arrow::write_csv_arrow(data.frame(id = i, raw_text = texts[i]), files_csv[i])
   }
   writeLines(texts[1], paste0(temp_source, "0.txt"))
 
@@ -282,10 +282,10 @@ test_that("reading from files works", {
     "text appears to point to csv files, but text_column was not specified",
     fixed = TRUE
   )
-  arrow::write_csv_arrow(data.frame(text = NA), paste0(temp_source, "!.csv"))
+  arrow::write_csv_arrow(data.frame(raw_text = NA), paste0(temp_source, "!.csv"))
   csv_directory <- receptiviti(
     temp_source,
-    text_column = "text", file_type = "csv", cache = temp_cache,
+    text_column = "raw_text", file_type = "csv", cache = temp_cache,
     bundle_size = 25, collapse_lines = TRUE
   )
   expect_true(all(initial$text_hash %in% csv_directory$text_hash))
@@ -303,20 +303,20 @@ test_that("reading from files works", {
     receptiviti(paste(texts, collapse = " "), cache = temp_cache)
   )
   expect_error(receptiviti(file_csv, cache = temp_cache))
-  expect_equal(receptiviti(file_csv, text_column = "text", cache = temp_cache)[, -1], initial[, -1])
+  expect_equal(receptiviti(file_csv, text_column = "raw_text", cache = temp_cache)[, -1], initial[, -1])
 
-  alt_id <- receptiviti(file_csv, text_column = "text", id_column = "id", cache = temp_cache)
-  expect_identical(alt_id, receptiviti(csv_data, text_column = "text", id = "id", cache = temp_cache))
-  expect_identical(alt_id, receptiviti(csv_data$text, id = csv_data$id, cache = temp_cache))
+  alt_id <- receptiviti(file_csv, text_column = "raw_text", id_column = "id", cache = temp_cache)
+  expect_identical(alt_id, receptiviti(csv_data, text_column = "raw_text", id = "id", cache = temp_cache))
+  expect_identical(alt_id, receptiviti(csv_data$raw_text, id = csv_data$id, cache = temp_cache))
 
   first_res <- receptiviti(texts[1], cache = temp_cache)
   writeBin(iconv(texts[1], "utf-8", "utf-16", toRaw = TRUE)[[1]], file_txt, useBytes = TRUE)
   expect_error(suppressWarnings(receptiviti(file_txt, encoding = "utf-8")), "no texts were found")
   expect_equal(receptiviti(file_txt)[, -1], first_res)
 
-  writeBin(iconv(paste0("text\n", texts[1], "\n"), "utf-8", "utf-16", toRaw = TRUE)[[1]], file_csv, useBytes = TRUE)
-  expect_error(suppressWarnings(receptiviti(file_csv, text_column = "text", encoding = "utf-8")), "failed to read in")
-  expect_equal(receptiviti(file_csv, text_column = "text")[, -1], first_res)
+  writeBin(iconv(paste0("raw_text\n", texts[1], "\n"), "utf-8", "utf-16", toRaw = TRUE)[[1]], file_csv, useBytes = TRUE)
+  expect_error(suppressWarnings(receptiviti(file_csv, text_column = "raw_text", encoding = "utf-8")), "failed to read in")
+  expect_equal(receptiviti(file_csv, text_column = "raw_text")[, -1], first_res)
 })
 
 test_that("rate limit is handled", {
