@@ -200,7 +200,15 @@ trending_drives <- drives[order(-abs(cor(
   processed[later_times, drives], processed$year[later_times]
 )))[1:3]]
 
-# split time to visualize
+splot(
+  scale(processed[, trending_drives]) ~ year, processed, year > 1980,
+  title = FALSE, laby = "Score", lpos = "top"
+)
+```
+
+To better visualize the effects, we might look between aggregated blocks of time:
+
+```{r, fig.alt="drives categories between time periods"}
 time_median <- median(processed$year)
 processed$time_period <- paste(c("<", ">="), time_median)[
   (processed$year >= time_median) + 1
@@ -211,6 +219,19 @@ splot(
   title = FALSE, laby = "Score", lpos = "top"
 )
 ```
+
+This suggests that references to risk and reward have increased since the 2000s while references
+to power have decreased at a similar rate. (Note that error bars represent how much variance there
+is within groups, which allows you to eyeball the statistical significance of mean differences.) 
+
+The shift in emphasis from power to risk-reward could reflect that commencement speakers are now
+focusing more abstractly on the potential benefits and hazards of life after graduation, whereas
+earlier speakers more narrowly focused on ambition and dominance (perhaps referring to power held
+by past alumni and projecting the potential for graduates to climb social ladders in the future).
+You could examine a sample of speeches that show this pattern most dramatically (speeches high in
+risk-reward and low in power in recent years, and vice versa for pre-2009 speeches) to help
+determine how these themes have shifted and what specific motives or framing devices seem to
+have been (de)emphasized.
 
 ## Analyze Segments
 
@@ -279,9 +300,20 @@ splot(
 )
 ```
 
+The bar chart displays original values, which offers the clearest view of how meaningful the
+differences between segments might be, in addition to their statistical significance
+(which offers a rough guide to the reliability of differences, based on the variance within
+and between segments). By looking at the bar graph, you can immediately see that admiration shows
+some of the starkest differences between middle and early/late segments.
+
 ```{r, fig.alt="scaled SALLEE scores by segment"}
 splot(
   scale(most_deviating) ~ segment, segmented_text,
   leg = "out", laby = "Score (Scaled)", title = FALSE, prat = c(4, 1)
 )
 ```
+
+The line charts, on the other hand, shows standardized values, effectively zooming in on the
+differences between segments. This more clearly shows, for example, that admiration and joy
+seem to be used as bookends in commencement speeches, peaking early and late, whereas more negative
+and intense emotions such as anger, disgust, and surprise peak in the middle section.

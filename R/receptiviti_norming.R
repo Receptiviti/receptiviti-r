@@ -180,28 +180,24 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   if (is.null(text)) {
     return(status)
   }
-  if (status$status == "completed") {
-    warning("status is `completed`, so cannot send text", call. = FALSE)
+  if (status$status != "created") {
+    warning("status is not `created`, so cannot send text", call. = FALSE)
     return(invisible(list(
       initial_status = status,
       first_pass = NULL,
       second_pass = NULL
     )))
   }
-  if (status$status == "pass_two") {
-    first_pass <- NULL
-  } else {
-    if (verbose) message("sending first-pass samples for ", name)
-    first_pass <- manage_request(
-      text,
-      id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
-      file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
-      bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
-      clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
-      in_memory = in_memory, url = paste0(baseurl, name, "/one"), key = key, secret = secret,
-      verbose = verbose, to_norming = TRUE
-    )$final_res
-  }
+  if (verbose) message("sending first-pass samples for ", name)
+  first_pass <- manage_request(
+    text,
+    id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
+    file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
+    bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
+    clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
+    in_memory = in_memory, url = paste0(baseurl, name, "/one"), key = key, secret = secret,
+    verbose = verbose, to_norming = TRUE
+  )$final_res
   second_pass <- NULL
   if (!is.null(first_pass$analyzed_samples) && all(first_pass$analyzed_samples == 0)) {
     warning(
