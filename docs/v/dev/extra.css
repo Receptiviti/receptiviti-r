@@ -1,0 +1,3 @@
+.navbar-brand, .nav-link, .nav-link:hover, .navbar-brand:hover {
+  color: var(--bs-body-color);
+}
