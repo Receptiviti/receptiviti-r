@@ -105,12 +105,7 @@ speeches$text <- clean(speeches$text)
 speeches$text <- gsub("([a-z]) •", "\\1. ", speeches$text)
 ```
 
-## Analyze Full Texts
-
-We might start by seeing if any speeches stand out in terms of language style,
-or if there are any trends in content over time.
-
-### Load Package
+## Load Package
 
 If this is your first time using the package, see the
 [Get Started](https://receptiviti.github.io/receptiviti-r/articles/receptiviti.html)
@@ -120,7 +115,12 @@ guide to install it and set up your API credentials.
 library(receptiviti)
 ```
 
-### Process Text
+## Analyze Full Texts
+
+We might start by seeing if any speeches stand out in terms of language style,
+or if there are any trends in content over time.
+
+### Full: Process Text
 
 Now we can send the texts to the API for scoring, and join the results we get to
 the metadata:
@@ -134,7 +134,7 @@ processed <- cbind(speeches[, 1:4], processed)
 kable(processed[1:5, -(1:7)], digits = 3, row.names = FALSE)
 ```
 
-### Analyze Style
+### Full: Analyze Style
 
 To get at stylistic uniqueness, we can calculate Language Style Matching
 between each speech and the mean of all speeches:
@@ -185,23 +185,25 @@ kable(data.frame(
 ), digits = 3, row.names = FALSE)
 ```
 
-### Analyze Content
+### Full: Analyze Content
 
 To look at content over time, we might focus on a potentially interesting framework,
 such as drives:
 
 ```{r, fig.alt="drives categories over time"}
+library(splot)
+
 # select drives categories
-drives <- grep("drives", colnames(processed), value = TRUE, fixed = TRUE)
+drives <- processed[, grep("drives", colnames(processed), value = TRUE, fixed = TRUE)]
 
 # identify those more correlated with time (excluding the few earliest cases)
 later_times <- processed$year > 1980
-trending_drives <- drives[order(-abs(cor(
-  processed[later_times, drives], processed$year[later_times]
+drives <- drives[, order(-abs(cor(
+  drives[later_times, ], processed$year[later_times]
 )))[1:3]]
 
 splot(
-  scale(processed[, trending_drives]) ~ year, processed, year > 1980,
+  drives ~ year, processed, year > 1980,
   title = FALSE, laby = "Score", lpos = "top"
 )
 ```
@@ -215,8 +217,8 @@ processed$time_period <- paste(c("<", ">="), time_median)[
 ]
 
 splot(
-  scale(processed[, trending_drives]) ~ time_period, processed,
-  title = FALSE, laby = "Score", lpos = "top"
+  scale(drives) ~ time_period, processed,
+  title = FALSE, laby = "Score (Scaled)", lpos = "top"
 )
 ```
 
@@ -251,7 +253,7 @@ segmented_text <- cbind(speeches[segmented_text$input, 1:4], segmented_text)
 kable(segmented_text[1:9, 2:7], row.names = FALSE)
 ```
 
-### Process Text
+### Segments: Process Text
 
 Now we can send each segment to the API to be scored:
 
@@ -265,7 +267,7 @@ segmented_text <- cbind(segmented_text, processed_segments)
 kable(segmented_text[1:9, -(1:10)], digits = 3, row.names = FALSE)
 ```
 
-### Analyze Scores
+### Segments: Analyze Scores
 
 The [SALLEE framework](https://docs.receptiviti.com/frameworks/emotions)
 offers measures of emotions, so we might see which categories deviate
@@ -293,7 +295,6 @@ most_deviating <- segmented_text[, names(sort(-apply(
 Now we can look at those categories across segments:
 
 ```{r, fig.alt="SALLEE scores by segment"}
-library(splot)
 splot(
   most_deviating ~ segment, segmented_text,
   laby = "Score", title = FALSE, mv.as.x = TRUE, type = "bar"
