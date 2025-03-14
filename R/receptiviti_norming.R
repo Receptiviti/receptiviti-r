@@ -17,7 +17,7 @@
 #' only, including those of build-in contexts.
 #' @param id,text_column,id_column,files,dir,file_type,collapse_lines,encoding Additional
 #' arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.
-#' @param bundle_size,bundle_byte_limit,retry_limit,clear_scratch_cache,cores,use_future,in_memory
+#' @param bundle_size,bundle_byte_limit,retry_limit,clear_scratch_cache,use_future,in_memory
 #' Additional arguments used to manage the requests; same as those in
 #' \code{\link{receptiviti}}.
 #' @param key,secret,url Request arguments; same as those in \code{\link{receptiviti}}.
@@ -71,7 +71,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
                                 id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
                                 file_type = "txt", collapse_lines = FALSE, encoding = NULL,
                                 bundle_size = 1000, bundle_byte_limit = 75e5, retry_limit = 50,
-                                clear_scratch_cache = TRUE, cores = detectCores() - 1, use_future = FALSE, in_memory = TRUE,
+                                clear_scratch_cache = TRUE, use_future = FALSE, in_memory = TRUE,
                                 url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
                                 secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE) {
   params <- handle_request_params(url, key, secret)
@@ -194,7 +194,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
     file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
     bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
-    clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
+    clear_scratch_cache = clear_scratch_cache, cores = 1, use_future = use_future,
     in_memory = in_memory, url = paste0(baseurl, name, "/one"), key = key, secret = secret,
     verbose = verbose, to_norming = TRUE
   )$final_res
@@ -211,7 +211,7 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
       file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
       bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
-      clear_scratch_cache = clear_scratch_cache, cores = cores, use_future = use_future,
+      clear_scratch_cache = clear_scratch_cache, cores = 1, use_future = use_future,
       in_memory = in_memory, url = paste0(baseurl, name, "/two"), key = key, secret = secret,
       verbose = verbose, to_norming = TRUE
     )$final_res

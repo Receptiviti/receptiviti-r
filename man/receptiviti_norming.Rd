@@ -9,8 +9,7 @@ receptiviti_norming(name = NULL, text = NULL, options = list(),
   id_column = NULL, files = NULL, dir = NULL, file_type = "txt",
   collapse_lines = FALSE, encoding = NULL, bundle_size = 1000,
   bundle_byte_limit = 7500000, retry_limit = 50,
-  clear_scratch_cache = TRUE, cores = detectCores() - 1,
-  use_future = FALSE, in_memory = TRUE,
+  clear_scratch_cache = TRUE, use_future = FALSE, in_memory = TRUE,
   url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
   secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE)
 }
@@ -32,7 +31,7 @@ only, including those of build-in contexts.}
 \item{id, text_column, id_column, files, dir, file_type, collapse_lines, encoding}{Additional
 arguments used to handle \code{text}; same as those in \code{\link{receptiviti}}.}
 
-\item{bundle_size, bundle_byte_limit, retry_limit, clear_scratch_cache, cores, use_future, in_memory}{Additional arguments used to manage the requests; same as those in
+\item{bundle_size, bundle_byte_limit, retry_limit, clear_scratch_cache, use_future, in_memory}{Additional arguments used to manage the requests; same as those in
 \code{\link{receptiviti}}.}
 
 \item{key, secret, url}{Request arguments; same as those in \code{\link{receptiviti}}.}
