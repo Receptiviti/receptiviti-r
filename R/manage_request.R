@@ -298,7 +298,9 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
           warning("bundle ", body_hash, " failed: ", result$error)
         } else {
           su <- !is.na(result$error$code)
-          errors <- result[su & !duplicated(result$error$code), "error"]
+          errors <- if (is.data.frame(result)) {
+            result[su & !duplicated(result$error$code), "error"]
+          } else result$error
           warning(
             if (sum(su) > 1) "some texts were invalid: " else "a text was invalid: ",
             paste(
