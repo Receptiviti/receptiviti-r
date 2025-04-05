@@ -296,6 +296,12 @@ manage_request <- function(text = NULL, id = NULL, text_column = NULL, id_column
       if ("error" %in% names(result)) {
         if (!is.list(result$error)) {
           warning("bundle ", body_hash, " failed: ", result$error)
+        } else if (is.list(result$error)) {
+          warning(
+            "bundle ", body_hash, " failed: ",
+            if (!is.null(result$error$code)) paste0("(", result$error$code, ") ") else NULL,
+            result$error$message
+          )
         } else {
           su <- !is.na(result$error$code)
           errors <- if (is.data.frame(result)) {
