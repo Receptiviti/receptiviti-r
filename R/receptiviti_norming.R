@@ -67,19 +67,41 @@
 #' }
 #' @export
 
-receptiviti_norming <- function(name = NULL, text = NULL, options = list(), delete = FALSE, name_only = FALSE,
-                                id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
-                                file_type = "txt", collapse_lines = FALSE, encoding = NULL,
-                                bundle_size = 1000, bundle_byte_limit = 75e5, retry_limit = 50,
-                                clear_scratch_cache = TRUE, use_future = FALSE, in_memory = TRUE,
-                                url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
-                                secret = Sys.getenv("RECEPTIVITI_SECRET"), verbose = TRUE) {
+receptiviti_norming <- function(
+  name = NULL,
+  text = NULL,
+  options = list(),
+  delete = FALSE,
+  name_only = FALSE,
+  id = NULL,
+  text_column = NULL,
+  id_column = NULL,
+  files = NULL,
+  dir = NULL,
+  file_type = "txt",
+  collapse_lines = FALSE,
+  encoding = NULL,
+  bundle_size = 1000,
+  bundle_byte_limit = 75e5,
+  retry_limit = 50,
+  clear_scratch_cache = TRUE,
+  use_future = FALSE,
+  in_memory = TRUE,
+  url = Sys.getenv("RECEPTIVITI_URL"),
+  key = Sys.getenv("RECEPTIVITI_KEY"),
+  secret = Sys.getenv("RECEPTIVITI_SECRET"),
+  verbose = TRUE
+) {
   params <- handle_request_params(url, key, secret)
   if (name_only) {
-    req <- curl::curl_fetch_memory(paste0(params$url, "/v2/norming"), params$handler)
+    req <- curl::curl_fetch_memory(
+      paste0(params$url, "/v2/norming"),
+      params$handler
+    )
     if (req$status_code != 200) {
       stop(
-        "failed to make norming list request: ", req$status_code,
+        "failed to make norming list request: ",
+        req$status_code,
         call. = FALSE
       )
     }
@@ -109,7 +131,8 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   req <- curl::curl_fetch_memory(baseurl, params$handler)
   if (req$status_code != 200) {
     stop(
-      "failed to make norming list request: ", req$status_code,
+      "failed to make norming list request: ",
+      req$status_code,
       call. = FALSE
     )
   }
@@ -136,15 +159,22 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
       req <- curl::curl_fetch_memory(paste0(baseurl, name), params$handler)
       if (req$status_code != 200) {
         message <- list(error = rawToChar(req$content))
-        if (substr(message$error, 1, 1) == "{") message$error <- jsonlite::fromJSON(message$error)
-        stop("failed to delete custom norming context: ", message$error, call. = FALSE)
+        if (substr(message$error, 1, 1) == "{")
+          message$error <- jsonlite::fromJSON(message$error)
+        stop(
+          "failed to delete custom norming context: ",
+          message$error,
+          call. = FALSE
+        )
       }
       return(invisible(NULL))
     }
     status <- as.list(norms[norms$name == context_id, ])
     if (length(options)) {
       warning(
-        "context ", name, " already exists, so options do not apply",
+        "context ",
+        name,
+        " already exists, so options do not apply",
         call. = FALSE
       )
     }
@@ -153,18 +183,31 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     if (verbose) message("requesting creation of custom context ", name)
     curl::handle_setopt(
       params$handler,
-      copypostfields = jsonlite::toJSON(c(name = name, options), auto_unbox = TRUE)
+      copypostfields = jsonlite::toJSON(
+        c(name = name, options),
+        auto_unbox = TRUE
+      )
     )
     req <- curl::curl_fetch_memory(baseurl, params$handler)
     if (req$status_code != 200) {
       message <- list(error = rawToChar(req$content))
-      if (substr(message$error, 1, 1) == "{") message$error <- jsonlite::fromJSON(message$error)
-      stop("failed to make norming creation request: ", message$error, call. = FALSE)
+      if (substr(message$error, 1, 1) == "{")
+        message$error <- jsonlite::fromJSON(message$error)
+      stop(
+        "failed to make norming creation request: ",
+        message$error,
+        call. = FALSE
+      )
     }
     status <- jsonlite::fromJSON(rawToChar(req$content))
     for (option in names(options)) {
       if (!is.null(status[[option]]) && status[[option]] != options[[option]]) {
-        warning("set option ", option, " does not match the requested value", call. = FALSE)
+        warning(
+          "set option ",
+          option,
+          " does not match the requested value",
+          call. = FALSE
+        )
       }
     }
   }
@@ -174,7 +217,10 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   }
   if (verbose) {
     message(
-      "status of ", name, ": ", jsonlite::toJSON(status, pretty = TRUE, auto_unbox = TRUE)
+      "status of ",
+      name,
+      ": ",
+      jsonlite::toJSON(status, pretty = TRUE, auto_unbox = TRUE)
     )
   }
   if (is.null(text)) {
@@ -191,15 +237,32 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
   if (verbose) message("sending first-pass samples for ", name)
   first_pass <- manage_request(
     text,
-    id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
-    file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
-    bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
-    clear_scratch_cache = clear_scratch_cache, cores = 1, use_future = use_future,
-    in_memory = in_memory, url = paste0(baseurl, name, "/one"), key = key, secret = secret,
-    verbose = verbose, to_norming = TRUE
+    id = id,
+    text_column = text_column,
+    id_column = id_column,
+    files = files,
+    dir = dir,
+    file_type = file_type,
+    collapse_lines = collapse_lines,
+    encoding = encoding,
+    bundle_size = bundle_size,
+    bundle_byte_limit = bundle_byte_limit,
+    retry_limit = retry_limit,
+    clear_scratch_cache = clear_scratch_cache,
+    cores = 1,
+    use_future = use_future,
+    in_memory = in_memory,
+    url = paste0(baseurl, name, "/one"),
+    key = key,
+    secret = secret,
+    verbose = verbose,
+    to_norming = TRUE
   )$final_res
   second_pass <- NULL
-  if (!is.null(first_pass$analyzed_samples) && all(first_pass$analyzed_samples == 0)) {
+  if (
+    !is.null(first_pass$analyzed_samples) &&
+      all(first_pass$analyzed_samples == 0)
+  ) {
     warning(
       "no texts were successfully analyzed in the first pass, so second pass was skipped",
       call. = FALSE
@@ -208,16 +271,36 @@ receptiviti_norming <- function(name = NULL, text = NULL, options = list(), dele
     if (verbose) message("sending second-pass samples for ", name)
     second_pass <- manage_request(
       text,
-      id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
-      file_type = file_type, collapse_lines = collapse_lines, encoding = encoding,
-      bundle_size = bundle_size, bundle_byte_limit = bundle_byte_limit, retry_limit = retry_limit,
-      clear_scratch_cache = clear_scratch_cache, cores = 1, use_future = use_future,
-      in_memory = in_memory, url = paste0(baseurl, name, "/two"), key = key, secret = secret,
-      verbose = verbose, to_norming = TRUE
+      id = id,
+      text_column = text_column,
+      id_column = id_column,
+      files = files,
+      dir = dir,
+      file_type = file_type,
+      collapse_lines = collapse_lines,
+      encoding = encoding,
+      bundle_size = bundle_size,
+      bundle_byte_limit = bundle_byte_limit,
+      retry_limit = retry_limit,
+      clear_scratch_cache = clear_scratch_cache,
+      cores = 1,
+      use_future = use_future,
+      in_memory = in_memory,
+      url = paste0(baseurl, name, "/two"),
+      key = key,
+      secret = secret,
+      verbose = verbose,
+      to_norming = TRUE
     )$final_res
   }
-  if (!is.null(second_pass$analyzed_samples) && all(second_pass$analyzed_samples == 0)) {
-    warning("no texts were successfully analyzed in the second pass", call. = FALSE)
+  if (
+    !is.null(second_pass$analyzed_samples) &&
+      all(second_pass$analyzed_samples == 0)
+  ) {
+    warning(
+      "no texts were successfully analyzed in the second pass",
+      call. = FALSE
+    )
   }
   invisible(list(
     initial_status = status,

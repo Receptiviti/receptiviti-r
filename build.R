@@ -1,9 +1,10 @@
 # rebuild
-styler::style_pkg(filetype = c("R", "Rmd"))
+system2("air", "format .")
+styler::style_pkg(filetype = "Rmd")
 spelling::spell_check_package()
 devtools::document()
 pkgdown::build_site(lazy = TRUE)
-covr::report(covr::package_coverage(quiet = FALSE), "docs/coverage.html")
+covr::report(covr::package_coverage(quiet = FALSE), "docs/v/dev/coverage.html")
 
 # checks
 devtools::check()

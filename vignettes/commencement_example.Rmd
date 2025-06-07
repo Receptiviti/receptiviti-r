@@ -173,7 +173,7 @@ best_match <- lsm_pairs[
 
 # look at the top matches
 top_matches <- order(-best_match)[1:20]
-top_matches <- data.frame(a = top_matches, b = speeches[top_matches, "match"])
+top_matches <- data.frame(a = top_matches, b = speeches$match[top_matches])
 top_matches <- top_matches[!duplicated(apply(
   top_matches, 1, function(pair) paste(sort(pair), collapse = "")
 )), ]

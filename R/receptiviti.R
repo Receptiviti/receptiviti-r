@@ -1,5 +1,6 @@
 .onLoad <- function(lib, pkg) {
-  if (Sys.getenv("RECEPTIVITI_URL") == "") Sys.setenv(RECEPTIVITI_URL = "https://api.receptiviti.com/")
+  if (Sys.getenv("RECEPTIVITI_URL") == "")
+    Sys.setenv(RECEPTIVITI_URL = "https://api.receptiviti.com/")
 }
 
 #' Receptiviti API
@@ -204,29 +205,71 @@
 #' @importFrom stringi stri_enc_detect
 #' @export
 
-receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NULL, id_column = NULL, files = NULL, dir = NULL,
-                        file_type = "txt", encoding = NULL, return_text = FALSE, context = "written", custom_context = FALSE,
-                        api_args = getOption("receptiviti.api_args", list()),
-                        frameworks = getOption("receptiviti.frameworks", "all"), framework_prefix = TRUE, as_list = FALSE,
-                        bundle_size = 1000, bundle_byte_limit = 75e5, collapse_lines = FALSE, retry_limit = 50, clear_cache = FALSE,
-                        clear_scratch_cache = TRUE, request_cache = TRUE, cores = detectCores() - 1, collect_results = TRUE,
-                        use_future = FALSE, in_memory = TRUE, verbose = FALSE, overwrite = FALSE, compress = FALSE, make_request = TRUE,
-                        text_as_paths = FALSE, cache = Sys.getenv("RECEPTIVITI_CACHE"), cache_overwrite = FALSE,
-                        cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"), key = Sys.getenv("RECEPTIVITI_KEY"),
-                        secret = Sys.getenv("RECEPTIVITI_SECRET"), url = Sys.getenv("RECEPTIVITI_URL"),
-                        version = Sys.getenv("RECEPTIVITI_VERSION"), endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT")) {
+receptiviti <- function(
+  text = NULL,
+  output = NULL,
+  id = NULL,
+  text_column = NULL,
+  id_column = NULL,
+  files = NULL,
+  dir = NULL,
+  file_type = "txt",
+  encoding = NULL,
+  return_text = FALSE,
+  context = "written",
+  custom_context = FALSE,
+  api_args = getOption("receptiviti.api_args", list()),
+  frameworks = getOption("receptiviti.frameworks", "all"),
+  framework_prefix = TRUE,
+  as_list = FALSE,
+  bundle_size = 1000,
+  bundle_byte_limit = 75e5,
+  collapse_lines = FALSE,
+  retry_limit = 50,
+  clear_cache = FALSE,
+  clear_scratch_cache = TRUE,
+  request_cache = TRUE,
+  cores = detectCores() - 1,
+  collect_results = TRUE,
+  use_future = FALSE,
+  in_memory = TRUE,
+  verbose = FALSE,
+  overwrite = FALSE,
+  compress = FALSE,
+  make_request = TRUE,
+  text_as_paths = FALSE,
+  cache = Sys.getenv("RECEPTIVITI_CACHE"),
+  cache_overwrite = FALSE,
+  cache_format = Sys.getenv("RECEPTIVITI_CACHE_FORMAT", "parquet"),
+  key = Sys.getenv("RECEPTIVITI_KEY"),
+  secret = Sys.getenv("RECEPTIVITI_SECRET"),
+  url = Sys.getenv("RECEPTIVITI_URL"),
+  version = Sys.getenv("RECEPTIVITI_VERSION"),
+  endpoint = Sys.getenv("RECEPTIVITI_ENDPOINT")
+) {
   # check input
   if (!is.null(output)) {
-    if (!file.exists(output) && file.exists(paste0(output, ".xz"))) output <- paste0(output, ".xz")
-    if (!overwrite && file.exists(output)) stop("output file already exists; use overwrite = TRUE to overwrite it", call. = FALSE)
+    if (!file.exists(output) && file.exists(paste0(output, ".xz")))
+      output <- paste0(output, ".xz")
+    if (!overwrite && file.exists(output))
+      stop(
+        "output file already exists; use overwrite = TRUE to overwrite it",
+        call. = FALSE
+      )
   }
   if (isTRUE(cache)) {
     temp <- dirname(tempdir())
     if (basename(temp) == "working_dir") temp <- dirname(dirname(temp))
     cache <- paste0(temp, "/receptiviti_cache")
     if (!dir.exists(cache)) {
-      if (interactive() && !isFALSE(getOption("receptiviti.cache_prompt")) &&
-        grepl("^(?:[Yy1]|$)", readline("Do you want to establish a default cache? [Y/n] "))) {
+      if (
+        interactive() &&
+          !isFALSE(getOption("receptiviti.cache_prompt")) &&
+          grepl(
+            "^(?:[Yy1]|$)",
+            readline("Do you want to establish a default cache? [Y/n] ")
+          )
+      ) {
       } else {
         options(receptiviti.cache_prompt = FALSE)
         cache <- ""
@@ -243,7 +286,12 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     }
     if (clear_cache) unlink(cache, TRUE)
     dir.create(cache, FALSE, TRUE)
-    cached_parts <- list.files(cache, cache_format, recursive = TRUE, full.names = TRUE)
+    cached_parts <- list.files(
+      cache,
+      cache_format,
+      recursive = TRUE,
+      full.names = TRUE
+    )
   }
   st <- proc.time()[[3]]
   if (is.character(custom_context)) {
@@ -252,27 +300,50 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   }
   if (context != "written") {
     norming_status <- receptiviti_norming(
-      name_only = TRUE, url = url, key = key, secret = secret, verbose = FALSE
+      name_only = TRUE,
+      url = url,
+      key = key,
+      secret = secret,
+      verbose = FALSE
     )
     if (verbose) {
       message(
-        "retrieved custom norming context list (", round(proc.time()[[3]] - st, 4), ")"
+        "retrieved custom norming context list (",
+        round(proc.time()[[3]] - st, 4),
+        ")"
       )
     }
     context_id <- if (custom_context) paste0("custom/", context) else context
     if (!length(norming_status) || !(context_id %in% norming_status)) {
       stop(
-        "custom norming context ", context, " is not on record or is not complete",
+        "custom norming context ",
+        context,
+        " is not on record or is not complete",
         call. = FALSE
       )
     }
   }
-  if (length(frameworks) && !("all" %in% frameworks) && grepl("2", version, fixed = TRUE)) {
-    api_args$frameworks <- paste0(frameworks[frameworks != "summary"], collapse = ",")
+  if (
+    length(frameworks) &&
+      !("all" %in% frameworks) &&
+      grepl("2", version, fixed = TRUE)
+  ) {
+    api_args$frameworks <- paste0(
+      frameworks[frameworks != "summary"],
+      collapse = ","
+    )
   }
   if (!is.null(api_args$frameworks)) {
-    available_frameworks <- c("summary", receptiviti_frameworks(url, key, secret))
-    if (verbose) message("retrived frameworks list (", round(proc.time()[[3]] - st, 4), ")")
+    available_frameworks <- c(
+      "summary",
+      receptiviti_frameworks(url, key, secret)
+    )
+    if (verbose)
+      message(
+        "retrived frameworks list (",
+        round(proc.time()[[3]] - st, 4),
+        ")"
+      )
     arg_frameworks <- unlist(strsplit(api_args$frameworks, ",", fixed = TRUE))
     su <- !(arg_frameworks %in% available_frameworks)
     if (any(su)) {
@@ -285,16 +356,35 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   }
   res <- manage_request(
     text,
-    id = id, text_column = text_column, id_column = id_column, files = files, dir = dir,
-    file_type = file_type, encoding = encoding,
+    id = id,
+    text_column = text_column,
+    id_column = id_column,
+    files = files,
+    dir = dir,
+    file_type = file_type,
+    encoding = encoding,
     context = if (custom_context) paste0("custom/", context) else context,
-    api_args = api_args, bundle_size = bundle_size,
-    bundle_byte_limit = bundle_byte_limit, collapse_lines = collapse_lines,
-    retry_limit = retry_limit, clear_scratch_cache = clear_scratch_cache,
-    request_cache = request_cache, cores = cores, use_future = use_future, in_memory = in_memory,
-    verbose = verbose, make_request = make_request, text_as_paths = text_as_paths, cache = cache,
-    cache_overwrite = cache_overwrite, cache_format = cache_format, key = key, secret = secret,
-    url = url, version = version, endpoint = endpoint
+    api_args = api_args,
+    bundle_size = bundle_size,
+    bundle_byte_limit = bundle_byte_limit,
+    collapse_lines = collapse_lines,
+    retry_limit = retry_limit,
+    clear_scratch_cache = clear_scratch_cache,
+    request_cache = request_cache,
+    cores = cores,
+    use_future = use_future,
+    in_memory = in_memory,
+    verbose = verbose,
+    make_request = make_request,
+    text_as_paths = text_as_paths,
+    cache = cache,
+    cache_overwrite = cache_overwrite,
+    cache_format = cache_format,
+    key = key,
+    secret = secret,
+    url = url,
+    version = version,
+    endpoint = endpoint
   )
   data <- res$data
   final_res <- res$final_res
@@ -305,28 +395,39 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
     exclude <- c("id", "bin", names(api_args))
     bin_dirs <- list.dirs(cache)
     if (length(bin_dirs) > 1) {
-      if (verbose) message("defragmenting cache (", round(proc.time()[[3]] - st, 4), ")")
+      if (verbose)
+        message("defragmenting cache (", round(proc.time()[[3]] - st, 4), ")")
       write_time <- as.numeric(Sys.time())
       for (bin_dir in bin_dirs[-1]) {
         files <- list.files(bin_dir, cache_format, full.names = TRUE)
         if (length(files) > 1) {
           previous <- files[!(files %in% cached_parts)]
           if (collect_results && length(previous)) {
-            existing_cols <- unique(c("id", "bin", names(arrow::schema(arrow::open_dataset(
-              previous[[1]],
-              format = cache_format
-            )))))
+            existing_cols <- unique(c(
+              "id",
+              "bin",
+              names(arrow::schema(arrow::open_dataset(
+                previous[[1]],
+                format = cache_format
+              )))
+            ))
             if (
-              length(existing_cols) != ncol(final_res) || !all(existing_cols %in% colnames(final_res))
+              length(existing_cols) != ncol(final_res) ||
+                !all(existing_cols %in% colnames(final_res))
             ) {
-              if (verbose) message("  clearing existing cache since columns did not align")
+              if (verbose)
+                message("  clearing existing cache since columns did not align")
               unlink(previous)
             }
           }
-          bin_content <- dplyr::compute(arrow::open_dataset(bin_dir, format = cache_format))
+          bin_content <- dplyr::compute(arrow::open_dataset(
+            bin_dir,
+            format = cache_format
+          ))
           su <- !duplicated(as.character(bin_content$text_hash))
           if (!all(su)) bin_content <- bin_content[su, ]
-          writer <- if (cache_format == "parquet") arrow::write_parquet else arrow::write_feather
+          writer <- if (cache_format == "parquet") arrow::write_parquet else
+            arrow::write_feather
           all_rows <- nrow(bin_content)
           for (i in seq_len(ceiling(all_rows / 1e9))) {
             writer(
@@ -346,12 +447,19 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   }
 
   # prepare final results
-  if (verbose) message("preparing output (", round(proc.time()[[3]] - st, 4), ")")
+  if (verbose)
+    message("preparing output (", round(proc.time()[[3]] - st, 4), ")")
   rownames(final_res) <- final_res$id
   rownames(data) <- data$id
-  data$text_hash <- structure(final_res$text_hash, names = data[final_res$id, "text"])[data$text]
+  data$text_hash <- structure(
+    final_res$text_hash,
+    names = data[final_res$id, "text"]
+  )[data$text]
   final_res <- cbind(
-    data[, c(if (return_text) "text", if (res$provided_id) "id", "text_hash"), drop = FALSE],
+    data[,
+      c(if (return_text) "text", if (res$provided_id) "id", "text_hash"),
+      drop = FALSE
+    ],
     final_res[
       structure(final_res$id, names = final_res$text_hash)[data$text_hash],
       !colnames(final_res) %in% c("id", "bin", "text_hash", "custom"),
@@ -361,9 +469,17 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   row.names(final_res) <- NULL
   if (!is.null(output)) {
     if (!grepl("\\.csv", output, TRUE)) output <- paste0(output, ".csv")
-    if (compress && !grepl(".xz", output, fixed = TRUE)) output <- paste0(output, ".xz")
+    if (compress && !grepl(".xz", output, fixed = TRUE))
+      output <- paste0(output, ".xz")
     if (grepl(".xz", output, fixed = TRUE)) compress <- TRUE
-    if (verbose) message("writing results to file: ", output, " (", round(proc.time()[[3]] - st, 4), ")")
+    if (verbose)
+      message(
+        "writing results to file: ",
+        output,
+        " (",
+        round(proc.time()[[3]] - st, 4),
+        ")"
+      )
     dir.create(dirname(output), FALSE, TRUE)
     if (overwrite) unlink(output)
     if (compress) output <- xzfile(output)
@@ -371,16 +487,27 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
   }
 
   if (is.character(frameworks) && frameworks[1] != "all") {
-    if (verbose) message("selecting frameworks (", round(proc.time()[[3]] - st, 4), ")")
+    if (verbose)
+      message("selecting frameworks (", round(proc.time()[[3]] - st, 4), ")")
     vars <- colnames(final_res)
-    sel <- grepl(paste0("^(?:", paste(tolower(frameworks), collapse = "|"), ")"), vars)
+    sel <- grepl(
+      paste0("^(?:", paste(tolower(frameworks), collapse = "|"), ")"),
+      vars
+    )
     if (any(sel)) {
-      if (missing(framework_prefix) && (length(frameworks) == 1 && frameworks != "all")) framework_prefix <- FALSE
+      if (
+        missing(framework_prefix) &&
+          (length(frameworks) == 1 && frameworks != "all")
+      )
+        framework_prefix <- FALSE
       sel <- unique(c("text", "id", "text_hash", names(api_args), vars[sel]))
       sel <- sel[sel %in% vars]
       final_res <- final_res[, sel]
     } else {
-      warning("frameworks did not match any columns -- returning all", call. = FALSE)
+      warning(
+        "frameworks did not match any columns -- returning all",
+        call. = FALSE
+      )
     }
   }
   if (as_list) {
@@ -395,7 +522,8 @@ receptiviti <- function(text = NULL, output = NULL, id = NULL, text_column = NUL
       if (!framework_prefix) colnames(res) <- sub("^.+\\.", "", colnames(res))
       res
     })
-  } else if (!framework_prefix) colnames(final_res) <- sub("^.+\\.", "", colnames(final_res))
+  } else if (!framework_prefix)
+    colnames(final_res) <- sub("^.+\\.", "", colnames(final_res))
   if (verbose) message("done (", round(proc.time()[[3]] - st, 4), ")")
   invisible(final_res)
 }

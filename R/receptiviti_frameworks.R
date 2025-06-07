@@ -12,14 +12,20 @@
 #' @export
 
 receptiviti_frameworks <- function(
-    url = Sys.getenv("RECEPTIVITI_URL"), key = Sys.getenv("RECEPTIVITI_KEY"),
-    secret = Sys.getenv("RECEPTIVITI_SECRET")) {
+  url = Sys.getenv("RECEPTIVITI_URL"),
+  key = Sys.getenv("RECEPTIVITI_KEY"),
+  secret = Sys.getenv("RECEPTIVITI_SECRET")
+) {
   params <- handle_request_params(url, key, secret)
-  req <- curl::curl_fetch_memory(paste0(params$url, "/v2/frameworks"), params$handler)
+  req <- curl::curl_fetch_memory(
+    paste0(params$url, "/v2/frameworks"),
+    params$handler
+  )
   if (req$status_code == 200) {
     return(jsonlite::fromJSON(rawToChar(req$content)))
   }
   content <- list(message = rawToChar(req$content))
-  if (substr(content$message, 1, 1) == "{") content <- jsonlite::fromJSON(content$message)
+  if (substr(content$message, 1, 1) == "{")
+    content <- jsonlite::fromJSON(content$message)
   stop("failed to retrieve frameworks list: ", content$message, call. = FALSE)
 }
