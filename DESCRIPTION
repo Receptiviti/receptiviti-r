@@ -1,14 +1,14 @@
 Package: receptiviti
 Type: Package
 Title: Text Analysis Through the 'Receptiviti' API
-Version: 0.1.9
+Version: 0.2.1
 Authors@R: c(
     person("Receptiviti Inc.", role = c("fnd", "cph")),
     person("Kent", "English", role = "cre", email = "kenglish@receptiviti.com"),
     person("Micah", "Iserman", role = c("aut", "ctr"))
   )
-Description: Send text to the <https://www.receptiviti.com> API to be scored
-    by all available frameworks.
+Description: Sends texts to the <https://www.receptiviti.com> API to be scored,
+    and facilitates the creation of custom norms and local results databases.
 License: MIT + file LICENSE
 Imports: curl, jsonlite, digest, progressr, stringi
 Suggests: 

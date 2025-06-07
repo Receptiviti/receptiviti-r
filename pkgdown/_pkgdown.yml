@@ -22,6 +22,8 @@ navbar:
       menu:
       - text: Development
         href: https://receptiviti.github.io/receptiviti-r/v/dev/
+      - text: 0.2.0
+        href: https://receptiviti.github.io/receptiviti-r/v/0.2.0/
       - text: 0.1.8
         href: https://receptiviti.github.io/receptiviti-r/v/0.1.8/
       - text: 0.1.7

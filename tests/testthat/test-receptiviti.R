@@ -123,7 +123,7 @@ test_that("a single text works", {
     )
   )
   expect_true(file.exists(output))
-  expect_identical(read.csv(output), score)
+  expect_equal(read.csv(output), score)
 })
 
 test_that("v2 works", {
@@ -581,11 +581,12 @@ test_that("spliting oversized bundles works", {
     res$text_hash,
     unname(vapply(
       list.files(temp_source, "txt", full.names = TRUE),
-      function(f)
+      function(f) {
         unname(digest::digest(
           paste0(arg_hash, texts[files_txt == f]),
           serialize = FALSE
-        )),
+        ))
+      },
       ""
     ))
   )

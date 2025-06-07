@@ -1,4 +1,4 @@
-# receptiviti 0.1.9
+# receptiviti 0.2.0
 
 ### Features
 * Adds `collect_results` option for large requests.
