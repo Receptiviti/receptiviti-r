@@ -457,30 +457,33 @@ manage_request <- function(
             result$error$message
           )
         } else {
-          su <- !is.na(result$error$code)
-          errors <- if (is.data.frame(result)) {
-            result[su & !duplicated(result$error$code), "error"]
+          if (is.data.frame(result)) {
+            warning(
+              "text-level errors present: ",
+              jsonlite::toJSON(result$error, pretty = TRUE)
+            )
           } else {
-            result$error
-          }
-          warning(
-            if (sum(su) > 1) "some texts were invalid: " else
-              "a text was invalid: ",
-            paste(
-              do.call(
-                paste0,
-                data.frame(
-                  "(",
-                  errors$code,
-                  ") ",
-                  errors$message,
-                  stringsAsFactors = FALSE
-                )
+            errors <- result$error
+            su <- !is.na(result$error$code)
+            warning(
+              if (sum(su) > 1) "some texts were invalid: " else
+                "a text was invalid: ",
+              paste(
+                do.call(
+                  paste0,
+                  data.frame(
+                    "(",
+                    errors$code,
+                    ") ",
+                    errors$message,
+                    stringsAsFactors = FALSE
+                  )
+                ),
+                collapse = "; "
               ),
-              collapse = "; "
-            ),
-            call. = FALSE
-          )
+              call. = FALSE
+            )
+          }
         }
       }
       if (to_norming) {
