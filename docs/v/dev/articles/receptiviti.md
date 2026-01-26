@@ -1,0 +1,345 @@
+# Get Started
+
+*Built with R 4.5.2*
+
+------------------------------------------------------------------------
+
+## Install and Load
+
+First, download and install R for your system:
+[Windows](https://cloud.r-project.org/bin/windows/base/) \|
+[Mac](https://cloud.r-project.org/bin/macosx/) \|
+[Linux](https://cloud.r-project.org/bin/linux/)
+
+You may also want to download and install
+[RStudio](https://www.rstudio.com/products/rstudio/download/#download)
+for a nice interface to R.
+
+Then, from an R console, install the package; this only needs to be done
+once:
+
+``` r
+install.packages("receptiviti")
+```
+
+Each time you start an R session, load the package:
+
+``` r
+library(receptiviti)
+```
+
+## Set Up API Credentials
+
+You can find your API key and secret on your
+[dashboard](https://dashboard.receptiviti.com).
+
+You can set these credentials up in R permanently or temporarily:
+
+### Permanent
+
+Open or create your `~/.Renviron` file:
+
+``` r
+usethis::edit_r_environ()
+```
+
+Then add these environment variables with your key and secret:
+
+``` sh
+RECEPTIVITI_KEY=""
+RECEPTIVITI_SECRET=""
+```
+
+Then restart R for the changes to take effect.
+
+### Temporary
+
+Add your key and secret, and run at the start of each session:
+
+``` r
+Sys.setenv(
+  RECEPTIVITI_KEY = "",
+  RECEPTIVITI_SECRET = ""
+)
+```
+
+### Confirm Credentials
+
+Check that the API is reachable, and your credentials are recognized:
+
+``` r
+receptiviti_status()
+#> Status: OK
+#> Message: Hello there, World!
+```
+
+If your credentials are not recognized, you’ll get a response like this:
+
+``` r
+receptiviti_status(key = 123, secret = 123)
+#> Status: ERROR
+#> Message: 401 (1411): Unrecognized API key pair. This call will not count towards your plan.
+```
+
+## Enter Your Text
+
+### Loaded Text
+
+If your texts are already in R, you can enter them directly.
+
+These can be in a single character:
+
+``` r
+results <- receptiviti("texts to score")
+```
+
+Or a character vector:
+
+``` r
+results <- receptiviti(c("text one", "text two"))
+```
+
+Or from a `data.frame`:
+
+``` r
+data <- data.frame(texts = c("text a", "text b"))
+
+# directly
+results <- receptiviti(data$texts)
+
+# by column name
+results <- receptiviti(data, text_column = "texts")
+```
+
+### Text in files
+
+You can enter paths to files containing separate texts in each line:
+
+``` r
+# single
+results <- receptiviti("../files/file.txt")
+
+# multiple
+results <- receptiviti(files = c("../files/file1.txt", "../files/file2.txt"))
+```
+
+Or to a comma delimited file with a column containing text. Here, the
+`text_column` argument specifies which column contains text:
+
+``` r
+# single
+results <- receptiviti("../files/file.csv", text_column = "text")
+
+# multiple
+results <- receptiviti(
+  files = c("../files/file1.csv", "../files/file2.csv"),
+  text_column = "text"
+)
+```
+
+Or you can point to a directory containing text files:
+
+``` r
+results <- receptiviti(dir = "../files")
+```
+
+By default `.txt` files will be looked for, but you can specify `.csv`
+files with the `file_type` argument:
+
+``` r
+results <- receptiviti(
+  dir = "../files",
+  text_column = "text", file_type = "csv"
+)
+```
+
+## Use Results
+
+### Returned Results
+
+By default, results are returned as a `data.frame`, with a row for each
+text, and columns for each framework variable:
+
+``` r
+results <- receptiviti("texts to score")
+results[, 1:4]
+#>                          text_hash summary.word_count
+#> 1 acab8277267d0efee0828f94e0919ddf                  3
+#>   summary.words_per_sentence summary.sentence_count
+#> 1                          3                      1
+```
+
+Here, the first column (`text_hash`) is the MD5 hash of the text, which
+identifies unique texts, and is stored in the main cache.
+
+The entered text can also be included with the `return_text` argument:
+
+``` r
+results <- receptiviti("texts to score", return_text = TRUE)
+results[, 1:3]
+#>             text                        text_hash summary.word_count
+#> 1 texts to score acab8277267d0efee0828f94e0919ddf                  3
+```
+
+You can also select frameworks before they are all returned:
+
+``` r
+results <- receptiviti("texts to score", frameworks = "liwc")
+results[, 1:4]
+#>                          text_hash analytical_thinking clout authentic
+#> 1 acab8277267d0efee0828f94e0919ddf                0.99   0.5      0.01
+```
+
+By default, a single framework will have column names without the
+framework name, but you can retain these with `framework_prefix = TRUE`:
+
+``` r
+results <- receptiviti(
+  "texts to score",
+  frameworks = "liwc", framework_prefix = TRUE
+)
+results[, 1:3]
+#>                          text_hash liwc.analytical_thinking liwc.clout
+#> 1 acab8277267d0efee0828f94e0919ddf                     0.99        0.5
+```
+
+You can also have results returned as a list of frameworks, which might
+make it easier to work with each separately:
+
+``` r
+results <- receptiviti("texts to score", as_list = TRUE)
+results$personality[, 1:4]
+#>                          text_hash extraversion   active assertive
+#> 1 acab8277267d0efee0828f94e0919ddf     40.60506 43.54977  32.54014
+```
+
+### Aligning Results
+
+Results are returned in a way that aligns with the text you enter
+originally, including any duplicates or invalid entries.
+
+This means you can add the results object to original data:
+
+``` r
+data <- data.frame(id = 1:4, text = c("text a", NA, "", "text a"))
+results <- receptiviti(data$text)
+
+# combine data and results
+cbind(data, results)[, 1:4]
+#>   id   text                        text_hash summary.word_count
+#> 1  1 text a 42ff59040f004970040f90a19aa6b3fa                  2
+#> 2  2   <NA>                             <NA>                 NA
+#> 3  3                                    <NA>                 NA
+#> 4  4 text a 42ff59040f004970040f90a19aa6b3fa                  2
+```
+
+You can also provide a vector of unique IDs to be returned with results
+so they can be merged with other data:
+
+``` r
+results <- receptiviti(c("text a", "text b"), id = c("a", "b"))
+results[, 1:3]
+#>   id                        text_hash summary.word_count
+#> 1  a 42ff59040f004970040f90a19aa6b3fa                  2
+#> 2  b 4db2bfd2c8140dffac0060c9fb1c6d6f                  2
+
+# merge with a new dataset
+data <- data.frame(
+  id = c("a1", "b1", "a2", "b2"),
+  type = c("a", "b", "a", "b")
+)
+merge(data, results, by.x = "type", by.y = "id")[, 1:4]
+#>   type id                        text_hash summary.word_count
+#> 1    a a1 42ff59040f004970040f90a19aa6b3fa                  2
+#> 2    a a2 42ff59040f004970040f90a19aa6b3fa                  2
+#> 3    b b1 4db2bfd2c8140dffac0060c9fb1c6d6f                  2
+#> 4    b b2 4db2bfd2c8140dffac0060c9fb1c6d6f                  2
+```
+
+### Saved Results
+
+Results can also be saved to a `.csv` file:
+
+``` r
+receptiviti("texts to score", "../results.csv", overwrite = TRUE)
+results <- read.csv("../results.csv")
+results[, 1:4]
+#>                          text_hash summary.word_count
+#> 1 acab8277267d0efee0828f94e0919ddf                  3
+#>   summary.words_per_sentence summary.sentence_count
+#> 1                          3                      1
+```
+
+And this can be compressed:
+
+``` r
+receptiviti(
+  "texts to score", "../results.csv.xz",
+  compress = TRUE, overwrite = TRUE
+)
+results <- read.csv("../results.csv.xz")
+results[, 1:4]
+#>                          text_hash summary.word_count
+#> 1 acab8277267d0efee0828f94e0919ddf                  3
+#>   summary.words_per_sentence summary.sentence_count
+#> 1                          3                      1
+```
+
+In this case, the compressed file is 85% smaller.
+
+## Preserving Results
+
+The `receptiviti` function tries to avoid sending texts to the API as
+much as possible:
+
+- As part of the preparation process, it excludes duplicates and invalid
+  texts.
+- If enabled, it checks the primary cache to see if any texts have
+  already been scored.
+  - The primary cache is an Arrow database located by the `cache`
+    augment.
+  - Its format is determined by `cache_format`.
+  - You can skip checking it initially while still writing results to it
+    with `cache_overwrite = TRUE`.
+  - It can be cleared with `clear_cache = TRUE`.
+- It will check for any responses to previous, identical requests.
+  - Responses are stored in
+    [`tempdir()`](https://rdrr.io/r/base/tempfile.html) as `.json` files
+    named by the bundle’s MD5 hash.
+  - You can avoid using this cache with `request_cache = FALSE`.
+  - This cache is cleared when R is restarted.
+
+If you want to make sure no texts are sent to the API, you can use
+`make_request = FALSE`. This will use the primary and request cache, but
+will fail if any texts are not found there.
+
+If a call fails before results can be written to the cache or returned,
+all received responses will still be in the request cache, but those
+will be deleted if R is restarted. If you want to preserve these but
+need to restart R, you can move the cached responses out of
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html), then replace them
+after restarting.
+
+## Handling Big Data
+
+The `receptiviti` function will handle splitting texts into bundles, so
+the limit on how many texts you can process at once will come down to
+your system’s amount of random access memory (RAM). Several thousands of
+texts should be fine, but getting into millions of texts, you may not be
+able to have all of the results loaded at once. To get around this, you
+can fully process subsets of your texts.
+
+A benefit of processing more texts at once is that requests can be
+parallelized, but this is more RAM intensive, and the primary cache is
+updated less frequently (as it is updated only at the end of a complete
+run).
+
+You could also parallelize your own batches, but be sure to set `cores`
+to `1` (to disable the function’s parallelization) and do not enable the
+primary cache (to avoid attempting to read from the cache while it is
+being written to by another instance).
+
+Not using the primary cache is also more efficient, but you may want to
+ensure you are not sending duplicate texts between calls. The function
+handles duplicate texts within calls (only ever sending unique texts),
+but depends on the cache to avoid sending duplicates between calls.

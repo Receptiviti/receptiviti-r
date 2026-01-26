@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">receptiviti</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,6 +48,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-versions" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Versions</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-versions">
 <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/dev/">Development</a></li>
+    <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.2.0/">0.2.0</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.8/">0.1.8</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.7/">0.1.7</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.6/">0.1.6</a></li>
@@ -95,7 +96,7 @@
 
     
     
-<p><em>Built with R 4.5.0</em></p>
+<p><em>Built with R 4.5.2</em></p>
 <hr>
 <p>This example uses the <code>Receptiviti</code> API to analyze
 commencement speeches.</p>
@@ -2039,7 +2040,7 @@ interesting framework, such as drives:</p>
 <span>  <span class="va">drives</span> <span class="op">~</span> <span class="va">year</span>, <span class="va">processed</span>, <span class="va">year</span> <span class="op">&gt;</span> <span class="fl">1980</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">FALSE</span>, laby <span class="op">=</span> <span class="st">"Score"</span>, lpos <span class="op">=</span> <span class="st">"top"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="commencement_example_files/figure-html/unnamed-chunk-10-1.svg" alt="drives categories over time" width="848.64"></p>
+<p><img src="commencement_example_files/figure-html/unnamed-chunk-10-1.svg" class="r-plt" alt="drives categories over time" width="848.64"></p>
 <p>To better visualize the effects, we might look between aggregated
 blocks of time:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -2052,7 +2053,7 @@ blocks of time:</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">drives</span><span class="op">)</span> <span class="op">~</span> <span class="va">time_period</span>, <span class="va">processed</span>,</span>
 <span>  title <span class="op">=</span> <span class="cn">FALSE</span>, laby <span class="op">=</span> <span class="st">"Score (Scaled)"</span>, lpos <span class="op">=</span> <span class="st">"top"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="commencement_example_files/figure-html/unnamed-chunk-11-1.svg" alt="drives categories between time periods" width="848.64"></p>
+<p><img src="commencement_example_files/figure-html/unnamed-chunk-11-1.svg" class="r-plt" alt="drives categories between time periods" width="848.64"></p>
 <p>This suggests that references to risk and reward have increased since
 the 2000s while references to power have decreased at a similar rate.
 (Note that error bars represent how much variance there is within
@@ -4637,7 +4638,7 @@ categories deviate the most in any of their segments:</p>
 <span>  <span class="va">most_deviating</span> <span class="op">~</span> <span class="va">segment</span>, <span class="va">segmented_text</span>,</span>
 <span>  laby <span class="op">=</span> <span class="st">"Score"</span>, title <span class="op">=</span> <span class="cn">FALSE</span>, mv.as.x <span class="op">=</span> <span class="cn">TRUE</span>, type <span class="op">=</span> <span class="st">"bar"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="commencement_example_files/figure-html/unnamed-chunk-15-1.svg" alt="SALLEE scores by segment" width="848.64"></p>
+<p><img src="commencement_example_files/figure-html/unnamed-chunk-15-1.svg" class="r-plt" alt="SALLEE scores by segment" width="848.64"></p>
 <p>The bar chart displays original values, which offers the clearest
 view of how meaningful the differences between segments might be, in
 addition to their statistical significance (which offers a rough guide
@@ -4650,7 +4651,7 @@ and early/late segments.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="va">most_deviating</span><span class="op">)</span> <span class="op">~</span> <span class="va">segment</span>, <span class="va">segmented_text</span>,</span>
 <span>  leg <span class="op">=</span> <span class="st">"out"</span>, laby <span class="op">=</span> <span class="st">"Score (Scaled)"</span>, title <span class="op">=</span> <span class="cn">FALSE</span>, prat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="commencement_example_files/figure-html/unnamed-chunk-16-1.svg" alt="scaled SALLEE scores by segment" width="848.64"></p>
+<p><img src="commencement_example_files/figure-html/unnamed-chunk-16-1.svg" class="r-plt" alt="scaled SALLEE scores by segment" width="848.64"></p>
 <p>The line charts, on the other hand, shows standardized values,
 effectively zooming in on the differences between segments. This more
 clearly shows, for example, that admiration and joy seem to be used as
@@ -4670,7 +4671,7 @@ in the middle section.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

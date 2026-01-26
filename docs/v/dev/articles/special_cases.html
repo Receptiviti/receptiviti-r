@@ -6,12 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Special Cases • receptiviti</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -27,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">receptiviti</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.9</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +47,8 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-versions" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Versions</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-versions">
-<li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/">Development</a></li>
+<li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/dev/">Development</a></li>
+    <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.2.0/">0.2.0</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.8/">0.1.8</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.7/">0.1.7</a></li>
     <li><a class="dropdown-item" href="https://receptiviti.github.io/receptiviti-r/v/0.1.6/">0.1.6</a></li>
@@ -96,7 +96,7 @@
 
     
     
-<p><em>Built with R 4.4.2</em></p>
+<p><em>Built with R 4.5.2</em></p>
 <hr>
 <div class="section level2">
 <h2 id="norming-contexts">Norming Contexts<a class="anchor" aria-label="anchor" href="#norming-contexts"></a>
@@ -124,26 +124,26 @@ another built-in context for general spoken text:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>written <span class="op">=</span> <span class="va">written</span>, spoken <span class="op">=</span> <span class="va">spoken</span><span class="op">)</span><span class="op">[</span>, <span class="va">differing</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                             written</span></span>
 <span><span class="co">#&gt; text_hash          45bbf3011f5ef8bb027af931a202afc6</span></span>
-<span><span class="co">#&gt; context                                     written</span></span>
-<span><span class="co">#&gt; big_5.extraversion                         29.60482</span></span>
-<span><span class="co">#&gt; big_5.active                               41.92496</span></span>
-<span><span class="co">#&gt; big_5.assertive                            18.60346</span></span>
-<span><span class="co">#&gt; big_5.cheerful                             41.64915</span></span>
-<span><span class="co">#&gt; big_5.energetic                            60.83928</span></span>
-<span><span class="co">#&gt; big_5.friendly                             44.94581</span></span>
-<span><span class="co">#&gt; big_5.sociable                             19.69610</span></span>
-<span><span class="co">#&gt; big_5.openness                            11.894965</span></span>
+<span><span class="co">#&gt; norming                                     written</span></span>
+<span><span class="co">#&gt; big_5.extraversion                         29.63096</span></span>
+<span><span class="co">#&gt; big_5.active                               41.53482</span></span>
+<span><span class="co">#&gt; big_5.assertive                            17.80752</span></span>
+<span><span class="co">#&gt; big_5.cheerful                             40.89578</span></span>
+<span><span class="co">#&gt; big_5.energetic                            60.73497</span></span>
+<span><span class="co">#&gt; big_5.friendly                             44.65852</span></span>
+<span><span class="co">#&gt; big_5.sociable                              18.1215</span></span>
+<span><span class="co">#&gt; big_5.openness                             7.772951</span></span>
 <span><span class="co">#&gt;                                              spoken</span></span>
 <span><span class="co">#&gt; text_hash          d89df4983ee8808bc1006c014ae142ca</span></span>
-<span><span class="co">#&gt; context                                      spoken</span></span>
-<span><span class="co">#&gt; big_5.extraversion                         31.14650</span></span>
-<span><span class="co">#&gt; big_5.active                               42.61641</span></span>
-<span><span class="co">#&gt; big_5.assertive                            20.81324</span></span>
-<span><span class="co">#&gt; big_5.cheerful                             38.75014</span></span>
-<span><span class="co">#&gt; big_5.energetic                            65.02978</span></span>
-<span><span class="co">#&gt; big_5.friendly                             43.74668</span></span>
-<span><span class="co">#&gt; big_5.sociable                             15.64881</span></span>
-<span><span class="co">#&gt; big_5.openness                             9.808802</span></span></code></pre></div>
+<span><span class="co">#&gt; norming                                      spoken</span></span>
+<span><span class="co">#&gt; big_5.extraversion                         31.72386</span></span>
+<span><span class="co">#&gt; big_5.active                               42.88861</span></span>
+<span><span class="co">#&gt; big_5.assertive                            21.65620</span></span>
+<span><span class="co">#&gt; big_5.cheerful                             39.88416</span></span>
+<span><span class="co">#&gt; big_5.energetic                            64.80285</span></span>
+<span><span class="co">#&gt; big_5.friendly                             45.00795</span></span>
+<span><span class="co">#&gt; big_5.sociable                              17.8745</span></span>
+<span><span class="co">#&gt; big_5.openness                             8.280626</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="custom">Custom<a class="anchor" aria-label="anchor" href="#custom"></a>
@@ -180,13 +180,13 @@ norming context when scoring:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>custom <span class="op">=</span> <span class="va">custom</span><span class="op">[</span>, <span class="va">differing</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                              custom</span></span>
 <span><span class="co">#&gt; text_hash          3dee016e73a68569d7cd31e1564c84a3</span></span>
-<span><span class="co">#&gt; context                       custom/custom_example</span></span>
+<span><span class="co">#&gt; norming                       custom/custom_example</span></span>
 <span><span class="co">#&gt; big_5.extraversion                                0</span></span>
 <span><span class="co">#&gt; big_5.active                                      0</span></span>
-<span><span class="co">#&gt; big_5.assertive                                 100</span></span>
-<span><span class="co">#&gt; big_5.cheerful                                  100</span></span>
-<span><span class="co">#&gt; big_5.energetic                                 100</span></span>
-<span><span class="co">#&gt; big_5.friendly                                  100</span></span>
+<span><span class="co">#&gt; big_5.assertive                                  50</span></span>
+<span><span class="co">#&gt; big_5.cheerful                                   50</span></span>
+<span><span class="co">#&gt; big_5.energetic                                  50</span></span>
+<span><span class="co">#&gt; big_5.friendly                                   50</span></span>
 <span><span class="co">#&gt; big_5.sociable                                    0</span></span>
 <span><span class="co">#&gt; big_5.openness                                    0</span></span></code></pre></div>
 </div>
@@ -292,13 +292,13 @@ case it’s specified in an environment variable).</p>
 <span>    files <span class="op">=</span> <span class="va">file_subset</span>, id <span class="op">=</span> <span class="va">file_subset</span>,</span>
 <span>    cores <span class="op">=</span> <span class="fl">1</span>, cache <span class="op">=</span> <span class="cn">FALSE</span>, request_cache <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span></span>
-<span>  <span class="fu">vroom</span><span class="fu">::</span><span class="fu"><a href="https://vroom.r-lib.org/reference/vroom_write.html" class="external-link">vroom_write</a></span><span class="op">(</span></span>
+<span>  <span class="fu">vroom</span><span class="fu">::</span><span class="fu"><a href="https://vroom.tidyverse.org/reference/vroom_write.html" class="external-link">vroom_write</a></span><span class="op">(</span></span>
 <span>    <span class="va">results</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">res_dir</span>, <span class="st">"/files_"</span>, <span class="va">i</span>, <span class="st">"-"</span>, <span class="va">i</span> <span class="op">+</span> <span class="fl">5</span>, <span class="st">".csv.xz"</span><span class="op">)</span>, <span class="st">","</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>Now results will be stored in smaller files:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">vroom</span><span class="fu">::</span><span class="fu"><a href="https://vroom.r-lib.org/reference/vroom.html" class="external-link">vroom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">res_dir</span>, <span class="st">"/files_1-6.csv.xz"</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">vroom</span><span class="fu">::</span><span class="fu"><a href="https://vroom.tidyverse.org/reference/vroom.html" class="external-link">vroom</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">res_dir</span>, <span class="st">"/files_1-6.csv.xz"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Rows: </span><span style="color: #0000BB;">5</span> <span style="font-weight: bold;">Columns: </span><span style="color: #0000BB;">199</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">Column specification</span> <span style="color: #00BBBB;">────────────────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; <span style="font-weight: bold;">Delimiter:</span> ","</span></span>
@@ -335,7 +335,7 @@ case it’s specified in an environment variable).</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
