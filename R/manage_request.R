@@ -11,7 +11,7 @@ manage_request <- function(
   api_args = getOption("receptiviti.api_args", list()),
   bundle_size = 1000,
   bundle_byte_limit = 75e5,
-  collapse_lines = FALSE,
+  collapse_lines = NULL,
   retry_limit = 50,
   clear_scratch_cache = TRUE,
   request_cache = TRUE,
@@ -96,6 +96,8 @@ manage_request <- function(
       )
     }
     if (text_as_paths || all(file.exists(text))) {
+      if (is.null(collapse_lines))
+        collapse_lines <- !all(grepl("\\.csv", text, TRUE))
       text_as_paths <- collapse_lines
       if (!collapse_lines) {
         if (verbose)

@@ -1,6 +1,6 @@
 # Get Started
 
-*Built with R 4.5.2*
+*Built with R 4.6.1*
 
 ------------------------------------------------------------------------
 
@@ -19,12 +19,14 @@ Then, from an R console, install the package; this only needs to be done
 once:
 
 ``` r
+
 install.packages("receptiviti")
 ```
 
 Each time you start an R session, load the package:
 
 ``` r
+
 library(receptiviti)
 ```
 
@@ -40,6 +42,7 @@ You can set these credentials up in R permanently or temporarily:
 Open or create your `~/.Renviron` file:
 
 ``` r
+
 usethis::edit_r_environ()
 ```
 
@@ -57,6 +60,7 @@ Then restart R for the changes to take effect.
 Add your key and secret, and run at the start of each session:
 
 ``` r
+
 Sys.setenv(
   RECEPTIVITI_KEY = "",
   RECEPTIVITI_SECRET = ""
@@ -68,6 +72,7 @@ Sys.setenv(
 Check that the API is reachable, and your credentials are recognized:
 
 ``` r
+
 receptiviti_status()
 #> Status: OK
 #> Message: Hello there, World!
@@ -76,6 +81,7 @@ receptiviti_status()
 If your credentials are not recognized, you’ll get a response like this:
 
 ``` r
+
 receptiviti_status(key = 123, secret = 123)
 #> Status: ERROR
 #> Message: 401 (1411): Unrecognized API key pair. This call will not count towards your plan.
@@ -90,18 +96,21 @@ If your texts are already in R, you can enter them directly.
 These can be in a single character:
 
 ``` r
+
 results <- receptiviti("texts to score")
 ```
 
 Or a character vector:
 
 ``` r
+
 results <- receptiviti(c("text one", "text two"))
 ```
 
 Or from a `data.frame`:
 
 ``` r
+
 data <- data.frame(texts = c("text a", "text b"))
 
 # directly
@@ -116,6 +125,7 @@ results <- receptiviti(data, text_column = "texts")
 You can enter paths to files containing separate texts in each line:
 
 ``` r
+
 # single
 results <- receptiviti("../files/file.txt")
 
@@ -127,6 +137,7 @@ Or to a comma delimited file with a column containing text. Here, the
 `text_column` argument specifies which column contains text:
 
 ``` r
+
 # single
 results <- receptiviti("../files/file.csv", text_column = "text")
 
@@ -140,6 +151,7 @@ results <- receptiviti(
 Or you can point to a directory containing text files:
 
 ``` r
+
 results <- receptiviti(dir = "../files")
 ```
 
@@ -147,6 +159,7 @@ By default `.txt` files will be looked for, but you can specify `.csv`
 files with the `file_type` argument:
 
 ``` r
+
 results <- receptiviti(
   dir = "../files",
   text_column = "text", file_type = "csv"
@@ -161,6 +174,7 @@ By default, results are returned as a `data.frame`, with a row for each
 text, and columns for each framework variable:
 
 ``` r
+
 results <- receptiviti("texts to score")
 results[, 1:4]
 #>                          text_hash summary.word_count
@@ -175,6 +189,7 @@ identifies unique texts, and is stored in the main cache.
 The entered text can also be included with the `return_text` argument:
 
 ``` r
+
 results <- receptiviti("texts to score", return_text = TRUE)
 results[, 1:3]
 #>             text                        text_hash summary.word_count
@@ -184,6 +199,7 @@ results[, 1:3]
 You can also select frameworks before they are all returned:
 
 ``` r
+
 results <- receptiviti("texts to score", frameworks = "liwc")
 results[, 1:4]
 #>                          text_hash analytical_thinking clout authentic
@@ -194,6 +210,7 @@ By default, a single framework will have column names without the
 framework name, but you can retain these with `framework_prefix = TRUE`:
 
 ``` r
+
 results <- receptiviti(
   "texts to score",
   frameworks = "liwc", framework_prefix = TRUE
@@ -207,6 +224,7 @@ You can also have results returned as a list of frameworks, which might
 make it easier to work with each separately:
 
 ``` r
+
 results <- receptiviti("texts to score", as_list = TRUE)
 results$personality[, 1:4]
 #>                          text_hash extraversion   active assertive
@@ -221,6 +239,7 @@ originally, including any duplicates or invalid entries.
 This means you can add the results object to original data:
 
 ``` r
+
 data <- data.frame(id = 1:4, text = c("text a", NA, "", "text a"))
 results <- receptiviti(data$text)
 
@@ -237,6 +256,7 @@ You can also provide a vector of unique IDs to be returned with results
 so they can be merged with other data:
 
 ``` r
+
 results <- receptiviti(c("text a", "text b"), id = c("a", "b"))
 results[, 1:3]
 #>   id                        text_hash summary.word_count
@@ -261,6 +281,7 @@ merge(data, results, by.x = "type", by.y = "id")[, 1:4]
 Results can also be saved to a `.csv` file:
 
 ``` r
+
 receptiviti("texts to score", "../results.csv", overwrite = TRUE)
 results <- read.csv("../results.csv")
 results[, 1:4]
@@ -273,6 +294,7 @@ results[, 1:4]
 And this can be compressed:
 
 ``` r
+
 receptiviti(
   "texts to score", "../results.csv.xz",
   compress = TRUE, overwrite = TRUE

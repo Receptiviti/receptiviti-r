@@ -8,10 +8,12 @@
 #' The main function to access the \href{https://www.receptiviti.com}{Receptiviti} API.
 #'
 #' @param text A character vector with text to be processed, path to a directory containing files, or a vector of file paths.
-#' If a single path to a directory, each file is collapsed to a single text. If a path to a file or files,
-#' each line or row is treated as a separate text, unless \code{collapse_lines} is \code{TRUE} (in which case,
-#' files will be read in as part of bundles at processing time, as is always the case when a directory).
+#' \code{.csv} files are always read in as tables with a separate text in each rows. \code{.txt} files are collapsed to a
+#' single row by default, and always if \code{text} is a single path to a directory.
 #' Use \code{files} to more reliably enter files, or \code{dir} to more reliably specify a directory.
+#' Setting \code{collapse_lines} to \code{FALSE} will treat each line in each file as a row instead.
+#' If lines are collapsed, the reading of files will be deferred until processing, which may be useful in cases of
+#' processing in parallel over many files.
 #' @param output Path to a \code{.csv} file to write results to. If this already exists, set \code{overwrite} to \code{TRUE}
 #' to overwrite it.
 #' @param id Vector of unique IDs the same length as \code{text}, to be included in the results.
@@ -37,7 +39,8 @@
 #' @param bundle_size Number of texts to include in each request; between 1 and 1,000.
 #' @param bundle_byte_limit Memory limit (in bytes) of each bundle, under \code{1e7} (10 MB, which is the API's limit).
 #' May need to be lower than the API's limit, depending on the system's requesting library.
-#' @param collapse_lines Logical; if \code{TRUE}, and \code{text} contains paths to files, each file is treated as a single text.
+#' @param collapse_lines Logical; if \code{FALSE}, and \code{text} contains paths to files,
+#' each line in each file is treated as a single text.
 #' @param retry_limit Maximum number of times each request can be retried after hitting a rate limit.
 #' @param overwrite Logical; if \code{TRUE}, will overwrite an existing \code{output} file.
 #' @param compress Logical; if \code{TRUE}, will save as an \code{xz}-compressed file.
@@ -224,7 +227,7 @@ receptiviti <- function(
   as_list = FALSE,
   bundle_size = 1000,
   bundle_byte_limit = 75e5,
-  collapse_lines = FALSE,
+  collapse_lines = NULL,
   retry_limit = 50,
   clear_cache = FALSE,
   clear_scratch_cache = TRUE,

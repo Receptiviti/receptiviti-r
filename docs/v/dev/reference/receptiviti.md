@@ -12,7 +12,7 @@ receptiviti(text = NULL, output = NULL, id = NULL, text_column = NULL,
   custom_context = FALSE, api_args = getOption("receptiviti.api_args",
   list()), frameworks = getOption("receptiviti.frameworks", "all"),
   framework_prefix = TRUE, as_list = FALSE, bundle_size = 1000,
-  bundle_byte_limit = 7500000, collapse_lines = FALSE, retry_limit = 50,
+  bundle_byte_limit = 7500000, collapse_lines = NULL, retry_limit = 50,
   clear_cache = FALSE, clear_scratch_cache = TRUE, request_cache = TRUE,
   cores = detectCores() - 1, collect_results = TRUE, use_future = FALSE,
   in_memory = TRUE, verbose = FALSE, overwrite = FALSE,
@@ -37,13 +37,15 @@ receptiviti_status(url = Sys.getenv("RECEPTIVITI_URL"),
 - text:
 
   A character vector with text to be processed, path to a directory
-  containing files, or a vector of file paths. If a single path to a
-  directory, each file is collapsed to a single text. If a path to a
-  file or files, each line or row is treated as a separate text, unless
-  `collapse_lines` is `TRUE` (in which case, files will be read in as
-  part of bundles at processing time, as is always the case when a
-  directory). Use `files` to more reliably enter files, or `dir` to more
-  reliably specify a directory.
+  containing files, or a vector of file paths. `.csv` files are always
+  read in as tables with a separate text in each rows. `.txt` files are
+  collapsed to a single row by default, and always if `text` is a single
+  path to a directory. Use `files` to more reliably enter files, or
+  `dir` to more reliably specify a directory. Setting `collapse_lines`
+  to `FALSE` will treat each line in each file as a row instead. If
+  lines are collapsed, the reading of files will be deferred until
+  processing, which may be useful in cases of processing in parallel
+  over many files.
 
 - output:
 
@@ -136,8 +138,8 @@ receptiviti_status(url = Sys.getenv("RECEPTIVITI_URL"),
 
 - collapse_lines:
 
-  Logical; if `TRUE`, and `text` contains paths to files, each file is
-  treated as a single text.
+  Logical; if `FALSE`, and `text` contains paths to files, each line in
+  each file is treated as a single text.
 
 - retry_limit:
 

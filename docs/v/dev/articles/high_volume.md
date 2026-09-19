@@ -34,6 +34,7 @@ time.
 We can start by writing some small text examples to files:
 
 ``` r
+
 base_dir <- "../../"
 text_dir <- paste0(base_dir, "test_texts/")
 dir.create(text_dir, FALSE, TRUE)
@@ -53,6 +54,7 @@ Disabling the `request_cache` will also avoid storing a copy of raw
 results.
 
 ``` r
+
 library(receptiviti)
 
 db_dir <- paste0(base_dir, "test_results")
@@ -68,6 +70,7 @@ Results are now available in the cache directory, which you can load in
 using the request function again:
 
 ``` r
+
 # adding make_request=False just ensures requests are not made if not found
 results <- receptiviti(dir = text_dir, cache = db_dir, make_request = FALSE)
 results[, 2:4]
@@ -105,6 +108,7 @@ parallelizing manually), and explicitly disable the primary cache (in
 case it’s specified in an environment variable).
 
 ``` r
+
 res_dir <- paste0(base_dir, "text_results_manual")
 dir.create(res_dir, FALSE, TRUE)
 
@@ -127,6 +131,7 @@ for (i in seq(1, 10, 5)) {
 Now results will be stored in smaller files:
 
 ``` r
+
 vroom::vroom(paste0(res_dir, "/files_1-6.csv.xz"))
 #> Rows: 5 Columns: 1569
 #> ── Column specification ────────────────────────────────────────────────────────

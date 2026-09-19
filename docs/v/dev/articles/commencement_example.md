@@ -1,6 +1,6 @@
 # Commencement Example
 
-*Built with R 4.5.2*
+*Built with R 4.6.1*
 
 ------------------------------------------------------------------------
 
@@ -23,6 +23,7 @@ source of a site that displays them:
 First, we can retrieve metadata from a separate repository:
 
 ``` r
+
 speeches <- read.csv(paste0(
   "https://raw.githubusercontent.com/whatrocks/markov-commencement-speech",
   "/refs/heads/master/speech_metadata.csv"
@@ -45,6 +46,7 @@ Windows (`:`), so we’ll need to pull them in individually, rather than
 cloning the repository:
 
 ``` r
+
 text_dir <- "../../commencement_speeches/"
 dir.create(text_dir, FALSE)
 
@@ -71,6 +73,7 @@ for (file in speeches$filename) {
 Now we can read in the texts and associate them with their metadata:
 
 ``` r
+
 speeches$text <- vapply(speeches$filename, function(file) {
   paste(readLines(paste0(
     text_dir, sub(":", "", file, fixed = TRUE)
@@ -81,6 +84,7 @@ speeches$text <- vapply(speeches$filename, function(file) {
 The texts contain a few special characters, which we can replace:
 
 ``` r
+
 # general special character replacement
 library(lingmatch)
 clean <- lma_dict(special, as.function = gsub)
@@ -97,6 +101,7 @@ Started](https://receptiviti.github.io/receptiviti-r/articles/receptiviti.html)
 guide to install it and set up your API credentials.
 
 ``` r
+
 library(receptiviti)
 ```
 
@@ -111,6 +116,7 @@ Now we can send the texts to the API for scoring, and join the results
 we get to the metadata:
 
 ``` r
+
 # since our texts are from speeches,
 # it might make sense to use the spoken norming context
 processed <- receptiviti(speeches$text, version = "v2", context = "spoken")
@@ -133,6 +139,7 @@ To get at stylistic uniqueness, we can calculate Language Style Matching
 between each speech and the mean of all speeches:
 
 ``` r
+
 # Currently, the lingmatch package only automatically handles
 # `liwc.` prefixes, so we'll rename the `liwc15.` ones.
 colnames(processed) <- sub("liwc15", "liwc", colnames(processed), fixed = TRUE)
@@ -166,6 +173,7 @@ We might also want to see which speeches are most similar to one
 another:
 
 ``` r
+
 # calculate all pairwise comparisons
 lsm_pairs <- lingmatch(processed, type = "lsm", symmetrical = TRUE)$sim
 
@@ -212,6 +220,7 @@ To look at content over time, we might focus on a potentially
 interesting framework, such as drives:
 
 ``` r
+
 library(splot)
 
 # select drives categories
@@ -236,6 +245,7 @@ To better visualize the effects, we might look between aggregated blocks
 of time:
 
 ``` r
+
 time_median <- median(processed$year)
 processed$time_period <- paste(c("<", ">="), time_median)[
   (processed$year >= time_median) + 1
@@ -278,6 +288,7 @@ One way to look at this would be to split texts into roughly equal
 sizes, and score each section:
 
 ``` r
+
 # split texts into 3 segments each, keeping sentences together
 segmented_text <- read.segments(
   text = speeches$text, segment = 3, bysentence = TRUE
@@ -304,6 +315,7 @@ kable(segmented_text[1:9, 2:7], row.names = FALSE)
 Now we can send each segment to the API to be scored:
 
 ``` r
+
 processed_segments <- receptiviti(
   segmented_text$text,
   version = "v2", context = "spoken"
@@ -332,6 +344,7 @@ offers measures of emotions, so we might see which categories deviate
 the most in any of their segments:
 
 ``` r
+
 # select the narrower SALLEE categories
 emotions <- segmented_text[, grep("^sallee", colnames(segmented_text))[-(1:6)]]
 
@@ -353,6 +366,7 @@ most_deviating <- segmented_text[, names(sort(-apply(
 Now we can look at those categories across segments:
 
 ``` r
+
 splot(
   most_deviating ~ segment, segmented_text,
   laby = "Score", title = FALSE, mv.as.x = TRUE, type = "bar"
@@ -371,6 +385,7 @@ admiration shows some of the starkest differences between middle and
 early/late segments.
 
 ``` r
+
 splot(
   scale(most_deviating) ~ segment, segmented_text,
   leg = "out", laby = "Score (Scaled)", title = FALSE, prat = c(4, 1)

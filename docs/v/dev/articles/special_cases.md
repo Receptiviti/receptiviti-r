@@ -1,6 +1,6 @@
 # Special Cases
 
-*Built with R 4.5.2*
+*Built with R 4.6.1*
 
 ------------------------------------------------------------------------
 
@@ -17,6 +17,7 @@ The default context is meant for general written text, and there is
 another built-in context for general spoken text:
 
 ``` r
+
 library(receptiviti)
 
 text <- "Text to be normed differently."
@@ -60,6 +61,7 @@ establishing a context, then scoring against it.
 Use the `receptiviti_norming` function to establish a custom context:
 
 ``` r
+
 context_text <- c(
   "Text with normed in it.",
   "Text with differently in it."
@@ -85,6 +87,7 @@ Then use the `custom_context` argument to specify that norming context
 when scoring:
 
 ``` r
+
 custom <- receptiviti(text, version = "v2", custom_context = "custom_example")
 
 as.data.frame(t(rbind(custom = custom[, differing])))
@@ -133,6 +136,7 @@ time.
 We can start by writing some small text examples to files:
 
 ``` r
+
 base_dir <- "../../"
 text_dir <- paste0(base_dir, "test_texts/")
 dir.create(text_dir, FALSE, TRUE)
@@ -152,6 +156,7 @@ Disabling the `request_cache` will also avoid storing a copy of raw
 results.
 
 ``` r
+
 db_dir <- paste0(base_dir, "test_results")
 dir.create(db_dir, FALSE, TRUE)
 
@@ -165,6 +170,7 @@ Results are now available in the cache directory, which you can load in
 using the request function again:
 
 ``` r
+
 # adding make_request=False just ensures requests are not made if not found
 results <- receptiviti(dir = text_dir, cache = db_dir, make_request = FALSE)
 results[, 2:4]
@@ -202,6 +208,7 @@ parallelizing manually), and explicitly disable the primary cache (in
 case it’s specified in an environment variable).
 
 ``` r
+
 res_dir <- paste0(base_dir, "text_results_manual")
 dir.create(res_dir, FALSE, TRUE)
 
@@ -224,6 +231,7 @@ for (i in seq(1, 10, 5)) {
 Now results will be stored in smaller files:
 
 ``` r
+
 vroom::vroom(paste0(res_dir, "/files_1-6.csv.xz"))
 #> Rows: 5 Columns: 199
 #> ── Column specification ────────────────────────────────────────────────────────

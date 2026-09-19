@@ -15,12 +15,14 @@ Release ([version
 0.2.1](https://cran.r-project.org/package=receptiviti))
 
 ``` r
+
 install.packages("receptiviti")
 ```
 
 Development (version 0.2.2)
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("Receptiviti/receptiviti-r")
 ```
@@ -28,6 +30,7 @@ remotes::install_github("Receptiviti/receptiviti-r")
 And load the package:
 
 ``` r
+
 library(receptiviti)
 ```
 
@@ -43,6 +46,7 @@ library(receptiviti)
 ## Examples
 
 ``` r
+
 # score a single text
 single <- receptiviti("a text to score")
 
@@ -79,6 +83,7 @@ RECEPTIVITI_SECRET="56LettersAndNumbers"
 You can store these in your R environment file permanently:
 
 ``` r
+
 # opens ~/.Renviron; after editing, save and restart R
 usethis::edit_r_environ()
 ```
@@ -86,6 +91,7 @@ usethis::edit_r_environ()
 Or set them temporarily:
 
 ``` r
+
 Sys.setenv(
   RECEPTIVITI_KEY = "32lettersandnumbers",
   RECEPTIVITI_SECRET = "56LettersAndNumbers"

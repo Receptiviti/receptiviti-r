@@ -1,6 +1,14 @@
 # Changelog
 
+## receptiviti 0.2.2
+
+#### Improvements
+
+- Changes the `collapse_lines` default to `TRUE` for non-CSV files.
+
 ## receptiviti 0.2.1
+
+CRAN release: 2026-01-29
 
 #### Features
 

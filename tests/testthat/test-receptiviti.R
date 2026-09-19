@@ -2,7 +2,9 @@ options(stringsAsFactors = FALSE)
 key <- Sys.getenv("RECEPTIVITI_KEY")
 secret <- Sys.getenv("RECEPTIVITI_SECRET")
 text <- "a text to score"
-temp <- normalizePath(tempdir(), "/")
+temp <- normalizePath(file.path(tempdir(), "receptiviti_test"), "/", FALSE)
+unlink(temp, TRUE, TRUE)
+dir.create(temp)
 temp_cache <- paste0(temp, "/temp_cache")
 
 test_that("invalid inputs are caught", {
@@ -289,8 +291,8 @@ files_txt <- paste0(temp_source, text_seq, ".txt")
 
 test_that("verbose works", {
   expect_identical(
-    sub(
-      " \\([0-9.]+\\)",
+    gsub(
+      "^[^;]+;| \\([0-9.]+\\)",
       "",
       capture.output(
         initial <<- receptiviti(
@@ -302,7 +304,7 @@ test_that("verbose works", {
           overwrite = TRUE
         ),
         type = "message"
-      )
+      )[1:9]
     ),
     c(
       "pinging API",
@@ -320,8 +322,8 @@ test_that("verbose works", {
 
 test_that("cache updating and acceptable alternates are handled", {
   expect_identical(
-    sub(
-      " \\([0-9.]+\\)",
+    gsub(
+      "^[^;]+;| \\([0-9.]+\\)",
       "",
       capture.output(
         receptiviti(
@@ -338,7 +340,7 @@ test_that("cache updating and acceptable alternates are handled", {
           bundle_size = FALSE
         ),
         type = "message"
-      )
+      )[1:8]
     ),
     c(
       "pinging API",
@@ -426,7 +428,11 @@ test_that("reading from files works", {
   expect_equal(txt_directory, initial)
 
   expect_error(
-    receptiviti(temp_source, file_type = "csv", cache = temp_cache),
+    receptiviti(
+      temp_source,
+      file_type = "csv",
+      cache = temp_cache
+    ),
     "text appears to point to csv files, but text_column was not specified",
     fixed = TRUE
   )
@@ -451,11 +457,18 @@ test_that("reading from files works", {
   expect_equal(csv_directory, initial)
 
   expect_equal(
-    receptiviti(file_txt, cache = temp_cache, in_memory = FALSE)[, -1],
+    receptiviti(
+      file_txt,
+      cache = temp_cache,
+      in_memory = FALSE,
+      collapse_lines = FALSE
+    )[, -1],
     initial[, -1]
   )
   expect_equal(
-    receptiviti(files = file_txt, cache = temp_cache)[, -1],
+    receptiviti(files = file_txt, cache = temp_cache, collapse_lines = FALSE)[,
+      -1
+    ],
     initial[, -1]
   )
   expect_equal(
@@ -494,9 +507,9 @@ test_that("reading from files works", {
     file_txt,
     useBytes = TRUE
   )
-  expect_error(
-    suppressWarnings(receptiviti(file_txt, encoding = "utf-8")),
-    "no texts were found"
+  expect_warning(
+    receptiviti(file_txt, encoding = "utf-8"),
+    "invalid input found on input"
   )
   expect_equal(receptiviti(file_txt)[, -1], first_res)
 
